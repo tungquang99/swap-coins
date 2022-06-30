@@ -28,6 +28,7 @@
     "react-redux": "^8.0.2",
     "react-router-dom": "^6.3.0",
     "react-scripts": "^4.0.3",
+    "react-select-search": "^3.0.10",
     "react-use-googlelogin": "^0.12.5",
     "sass": "^1.52.3",
     "web-vitals": "^2.1.4",

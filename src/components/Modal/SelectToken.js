@@ -1,19 +1,11 @@
 import { Modal, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
+import SelectSearch, { fuzzySearch } from 'react-select-search';
 const { Option } = Select;
 
 const SelectToken = ({ isOpen, closeModal }) => {
     const [data, setData] = useState([])
     const [address, setAddress] = useState([])
-    const onChange = (value) => {
-        console.log(`selected ${value}`);
-      };
-
-      useEffect(async () => {
-        const coins = await fetch(`https://api.coingecko.com/api/v3/search?query=`).then(response => response.json())
-        console.log(coins);
-      }, [])
-      
     
      async function getCoins(query) {
         let coinsInfo;
@@ -31,26 +23,20 @@ const SelectToken = ({ isOpen, closeModal }) => {
             setTimeout(async () => {
                 const {coins, coinsInfo} = await getCoins(value) ;
                 setData(coins);
-                setAddress(coinsInfo);
-                console.log(data);
-                console.log(address);
-            }, 2000);
+                setAddress(coinsInfo['contract_address']);
+            }, 200);
         }
       };
 
     return (
         <Modal title="Select Token" visible={isOpen} onCancel={closeModal} footer={null}>
-            <a>{address['contract_address']}</a>
-            <Select
-                showSearch
-                placeholder="Select a person"
-                optionFilterProp="children"
-                onChange={onChange}
-                onSearch={onSearch}
-               
-            >
-               <Option>{address['contract_address']}</Option>
-            </Select>
+           
+            <div className="dropdown">
+                <input type="text" placeholder="Search.." id="myInput" onKeyUp={(e) => onSearch(e.target.value)} />
+                <div id="myDropdown" className="dropdown-content">
+                    <a>{address}</a>
+                </div>
+              </div>
         </Modal>
     );
 };
