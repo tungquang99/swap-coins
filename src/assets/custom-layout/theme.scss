@@ -1,0 +1,10 @@
+@import 'variable';
+@import './mixins/button';
+
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+@include _button($text-200, $white, $primary);

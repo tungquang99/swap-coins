@@ -1,0 +1,41 @@
+.gear {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    &-list {
+        display: flex;
+    }
+
+    &-box {
+        margin-right: 24px;
+    }
+
+    &-item {
+        width: 240px;
+        height: 240px;
+        background-color: rgba(192, 192, 192, 0.2);
+        border-radius: 16px;
+        padding: 24px;
+
+        img {
+            height: 200px;
+        }
+    }
+
+    &-action {
+        margin-top: 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        input {
+            height: 50px;
+            width: 100px;
+        }
+
+        .btn-buy {
+            width: 100px;
+        }
+    }
+}

@@ -1,0 +1,22 @@
+@mixin _button($text, $color, $primary) {
+    .btn {
+        width: 265px;
+        height: 54px; 
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        text-transform: uppercase;
+        background-color: $color;
+        box-shadow: 0px 8px 21px 0.14px rgba(0, 0, 0, 0.44);
+        border: 1px solid $primary;
+        border-radius: 12px;
+        color: $text;
+        font-family: $font-semibold;
+        font-size: $font-size-medium;
+    
+        &-primary {
+            color: $primary;
+        }
+    }
+}

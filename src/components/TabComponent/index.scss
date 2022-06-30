@@ -1,0 +1,35 @@
+@import '../../assets/custom-layout/theme.scss';
+
+.tab {
+    height: 100vh;
+    padding: 50px 120px;
+    &-list {
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+    }
+
+    &-item {
+        
+        font-weight: 500;
+        color: $white;
+        font-size: 30px;
+
+        &.active {
+            color: $primary;
+            
+        }
+        margin-bottom: 50px;
+    }
+
+    .line {
+        height: 10px;
+        width: 50px;
+        border-radius: 10px;
+        background-color: $white;
+        position: absolute;
+        top: 60%;
+        left: 47%;
+        transform: translate(-50%, -50%);
+    }
+}

@@ -1,0 +1,48 @@
+.container-login {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login {
+    max-width: 360px;
+    min-width: 300px;
+    min-height: 360px;
+    max-height: 600px;
+    background-color: rgba($color: #000000, $alpha: .1);
+    border-radius: 12px;
+    padding: 24px 16px;
+}
+
+input {
+    border: none;
+    padding: 16px 20px;
+    outline: none;
+    background-color: rgb(243, 243, 243);
+    border-radius: 8px;
+    width: 100%;
+}
+
+.btn {
+    padding: 16px;
+    border: none;
+    width: 100%;
+    margin: 16px 0;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.btn-next {
+    background-color: rgb(26, 120, 26);
+}
+.btn-with {
+    color: #000000;
+    background-color: #E5F9F2;
+    font-weight: bold;
+    letter-spacing: 2;
+}
+
+p {
+    text-align: center;
+}
