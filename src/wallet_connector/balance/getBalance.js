@@ -3,15 +3,15 @@ import { contract } from "../contract";
 
 
 
-export const getBalanceVic = async (address) => {
-    const contracts = await contract(contractAddress.balanceVic, abiBalanceVic)
-    const response = await contracts.methods.balanceOf(address).call()
+export const getBalnceFrom = async (address, account) => {
+    const contracts = await contract(address)
+    const response = await contracts.methods.balanceOf(account).call()
     return response;
 }
 
-export const getBalanceVicGem = async (address) => {
-    const contracts = await contract(contractAddress.balanceVicGem, abiBalanceVicGem)
-    const response = await contracts.methods.balanceOf(address).call()
+export const getBalnceTo = async (address, account) => {
+    const contracts = await contract(address)
+    const response = await contracts.methods.balanceOf(account).call()
     return response;
 }
 

@@ -15,10 +15,6 @@
     background-color: #5a5a5a;
     padding: 16px;
 
-    img {
-        width: 40px;
-        height: 40px;
-    }
 
     &__header {
         display: flex;
@@ -178,6 +174,11 @@
             text-align: center;
             cursor: pointer;
         }
+
+        &--true {
+            color: $white;
+            background-color: $primary;
+        }
     }
 
     &__icon-swap {
@@ -227,6 +228,18 @@
         cursor: pointer;
 
         &-enable {
+            background-color: $primary;
+        }
+
+        &-disabled {
+            pointer-events: none;
+        }
+
+        &-isapprove {
+            width: 100%;
+        }
+
+        &-true {
             background-color: $primary;
         }
 

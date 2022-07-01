@@ -10,7 +10,7 @@ const SelectToken = ({ isOpen, closeModal }) => {
     const [coins, setCoins] = useState([])
     const [address, setAddress] = useState([]);
     const [search, setSearch] = useState('');
-    const { setAddressContract, setCoin, setExchange } = useContext(layoutContext);
+    const { setAddressContract2, setCoin2, setExchangeTo } = useContext(layoutContext);
 
      async function getCoins(query) {
         let coinsInfo = [];
@@ -23,14 +23,13 @@ const SelectToken = ({ isOpen, closeModal }) => {
                 })
               );
         }
-        const addressList = coinsInfo.map(item => item.contract_address)
-        return { coins, addressList }
+        return { coins, coinsInfo }
       }
 
         async function getSearchAddress(id) {
         const data = await fetch(`https://api.coingecko.com/api/v3/coins/${id}`).then(response => response.json()).then(data => data).catch(err => err);
-        setExchange(data.market_data['current_price'])
-        return data;
+        setExchangeTo(data.market_data['current_price'])
+        return data.contract_address;
       }
       
       
@@ -38,11 +37,12 @@ const SelectToken = ({ isOpen, closeModal }) => {
         setSearch(value);
         setTimeout(async() => {
             if (value !== '') {
-                const {coins, addressList} = await getCoins(value);
+                const {coins, coinsInfo} = await getCoins(value);
                     setCoins(coins.coins)
-                    setAddress(addressList);
+                    setAddress(coinsInfo);
+            
             }
-        }, 1000);
+        }, 2000);
 
         if (value === "") {
             setCoins([])
@@ -50,9 +50,9 @@ const SelectToken = ({ isOpen, closeModal }) => {
         }
       };
 
-      const selectAddress = async (address, coin) => {
-        setAddressContract(address);
-        setCoin(coin);
+      const selectAddress = (address, coin) => {
+        setAddressContract2(address);
+        setCoin2(coin);
         setCoins([])
         setAddress([])
         closeModal();

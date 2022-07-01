@@ -1,0 +1,44 @@
+.dropdown {
+    &-content {
+        background-color: rgb(243, 243, 243);
+        border-radius: 10px;
+        margin-top: 12px;
+        max-height: 300px;
+        min-height: 10px;
+        overflow-y: auto;
+    }
+
+    &-item {
+        border-bottom: 1px solid rgb(213, 213, 213);
+        padding: 8px 16px;
+        cursor: pointer;
+
+        &:hover {
+            background-color: rgb(212, 212, 212);
+        }
+
+        &:last-child {
+            border: none;
+        }
+    }
+
+    &-title {
+        display: flex;
+        align-items: center;
+        
+    }
+
+    &-name {
+        margin-left: 8px;
+    }
+
+    &-address {
+        margin-top: 8px;
+    }
+
+    &-no-item {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}

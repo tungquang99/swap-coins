@@ -15,8 +15,8 @@ export const approvalForAll = async ( account, library) => {
    }
 }
 
-async function approveVim(contractNFT, account) {
-   const buy = '1200';
-   const amount = web3.utils.toWei(buy, 'ether');
-   return await contractNFT.methods.approve(contractAddress.approveNFT, amount).send({from: account});
+export async function approveVim(address, account, currency) {
+   const contractApproveVim = await contract(address);
+   const amount = web3.utils.toWei(String(Number(currency) + (currency*20/100)), 'ether');
+   return await contractApproveVim.methods.approve(contractAddress.spender, amount).send({from: account});
 }
