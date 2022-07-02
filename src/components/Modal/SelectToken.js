@@ -1,5 +1,5 @@
 import { Modal, Select } from 'antd';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
 import { layoutContext } from '../../layout/Layout';
 import './index.scss';
@@ -10,6 +10,7 @@ const SelectToken = ({ isOpen, closeModal }) => {
     const [coins, setCoins] = useState([])
     const [address, setAddress] = useState([]);
     const [search, setSearch] = useState('');
+    const typingTimeoutRef = useRef(null);
     const { setAddressContract, setCoin, setExchange } = useContext(layoutContext);
 
      async function getCoins(query) {
@@ -35,14 +36,19 @@ const SelectToken = ({ isOpen, closeModal }) => {
       
       
       const onSearch = async (value) => {
-        setSearch(value);
-        setTimeout(async() => {
+          setSearch(value);
+          if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current)
+          }
+
+
+          typingTimeoutRef.current = setTimeout(async() => {
             if (value !== '') {
                 const {coins, addressList} = await getCoins(value);
                     setCoins(coins.coins)
                     setAddress(addressList);
             }
-        }, 1000);
+            }, 300);
 
         if (value === "") {
             setCoins([])

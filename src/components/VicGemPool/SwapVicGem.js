@@ -38,6 +38,7 @@ function SwapVicGem({ isChart, setIsChart }) {
   const [VAT, setVAT] = useState(0.5);
   const [status, setStatus] = useState(false);
   const [swap, setSwap] = useState(false);
+  const [checkSwap, setCheckSwap] = useState(false);
   const [enableBtn, setEnableBtn] = useState("disabled");
   const [isApprove, setIsApprove] = useState(true);
 
@@ -78,11 +79,15 @@ function SwapVicGem({ isChart, setIsChart }) {
 
   const handleInputSwapFrom = async (value) => {
     setCurrencyFrom(value);
-    setCurrencyTo((exchanges['bnb']*value / exchangesTo['bnb']).toFixed(2));
+    setCurrencyTo((exchanges['bnb']*value / exchangesTo['bnb']).toFixed(5));
   };
 
   const handleInputSwapTo = async (value) => {
     setCurrencyTo(value);
+    if (swap) {
+        setCheckSwap(true)
+    }
+    setCurrencyFrom((exchangesTo['bnb']*value / exchanges['bnb']).toFixed(5));
   };
 
   const handleEnableVic = async () => {
@@ -94,6 +99,23 @@ function SwapVicGem({ isChart, setIsChart }) {
   const showModal = () => {
     setIsModalVisible(true);
   };
+
+  const handleSwap = async () => {
+    setSwap(!swap)
+    if (!swap && addressContract2) {
+        if (Number(await checkApproveVim(addressContract2, account)) === 0) {
+            setIsApprove(false);
+        } else {
+            setIsApprove(true);
+        }
+        setCurrencyTo((currencyTo*(100 - VAT)/100).toFixed(5))
+    } else {
+        setIsApprove(true);
+    }
+    if (checkSwap) {
+        setCheckSwap(false)
+    }
+  }
 
   const showModelSelectToken = (value) => {
     if (value === "from") {
@@ -154,7 +176,7 @@ function SwapVicGem({ isChart, setIsChart }) {
           </div>
 
           <div className="swap-vic__icon-swap">
-            <i className="bx bx-sort-alt-2" onClick={() => setSwap(!swap)}></i>
+            <i className="bx bx-sort-alt-2" onClick={handleSwap}></i>
           </div>
 
           <div className="swap-vic__form">
@@ -204,10 +226,39 @@ function SwapVicGem({ isChart, setIsChart }) {
           />
         </div>
 
-        {/* <div className="swap-vic__cost">
-                    {vic != 0 && swap && <div>Maximum cost: {vic} - {(vic/VAT).toFixed(5)} VIC</div>}
-                    {vic != 0 && !swap && <div>Minimum receive: {(vic*VAT).toFixed(5)} - {vic} VIC</div>} 
-                </div> */}
+        <div className="swap-vic__cost">
+            {
+                !checkSwap && 
+                  <Fragment>
+                      {
+                        (currencyFrom != 0 || currencyTo != 0) && coin2 && !swap && <div>Minimum Received: {(currencyTo*(100 - VAT)/100).toFixed(5)}  {coin2.symbol}</div>
+                     }
+                     {
+                        (currencyFrom != 0 || currencyTo != 0) && coin2 && swap && <div>Minimum Sold: {(currencyTo/((100 - VAT)/100)).toFixed(5)}  {coin2.symbol}</div>
+                     }
+                  </Fragment>
+                
+            }
+            {
+                checkSwap && 
+                  <Fragment>
+                      {
+                        (currencyFrom != 0 || currencyTo != 0) && coin2 && checkSwap && <div>Minimum Received: {(currencyTo*(100 - VAT)/100).toFixed(5)}  {coin2.symbol}</div>
+                     }
+                     {
+                        (currencyFrom != 0 || currencyTo != 0) && coin2 && !checkSwap && <div>Minimum Sold: {(currencyTo/((100 - VAT)/100)).toFixed(5)}  {coin2.symbol}</div>
+                     }
+                  </Fragment>
+                
+            }
+            {
+              (currencyFrom != 0 || currencyTo != 0) &&  exchangesTo && exchangesTo['bnb']  &&  <div> Price: {(exchangesTo['bnb']*1 / exchanges['bnb']).toFixed(5)} {coin2.symbol} per 1 {coin.symbol}</div>
+            }
+            {
+              (currencyFrom != 0 || currencyTo != 0) &&  exchanges &&  exchanges['bnb'] && <div> Price: {(exchanges['bnb']*1 / exchangesTo['bnb']).toFixed(5)} {coin.symbol} per 1 {coin2.symbol}</div>
+            }
+          
+        </div>
       </div>
 
       <div className="swap-vic__footer">
