@@ -1,6 +1,7 @@
 import { Modal, Select } from 'antd';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import SelectSearch, { fuzzySearch } from 'react-select-search';
+import { coinNetwork } from '../../constants/coins';
 import { layoutContext } from '../../layout/Layout';
 import './index.scss';
 
@@ -10,6 +11,7 @@ const SelectToken = ({ isOpen, closeModal }) => {
     const [listCoins, setListCoins] = useState([])
     const [address, setAddress] = useState([]);
     const [search, setSearch] = useState('');
+    const [isSelect, setIsSelect] = useState(false)
     const typingTimeoutRef = useRef(null);
     const { setCoin2, setExchangeTo, coins } = useContext(layoutContext);
 
@@ -22,7 +24,13 @@ const SelectToken = ({ isOpen, closeModal }) => {
 
         typingTimeoutRef.current = setTimeout(async() => {
           if (value !== '') {
-             setListCoins(coins.filter(item => item.symbol.toLowerCase().includes(value.toLowerCase()) || item.name.toLowerCase().includes(value.toLowerCase())))
+            const data = coins.filter(item => item.symbol.toLowerCase().includes(value.toLowerCase()) || item.name.toLowerCase().includes(value.toLowerCase()))
+            if (data.length === 0) {
+                setIsSelect(true);
+            } else {
+                setIsSelect(false)
+            }
+             setListCoins(data)
           }
           }, 300);
 
@@ -59,15 +67,27 @@ const SelectToken = ({ isOpen, closeModal }) => {
                     }
 
                     {
-                        listCoins.length === 0 && 
-                            <div>
-                                <div className='dropdown-item dropdown-no-item'> 
+                        isSelect && listCoins.length === 0 && 
+                            <div className='dropdown-item'>
+                                <div className=' dropdown-no-item'> 
                                     No options
                                 </div>
                             </div>
                     }
                 </div>
-
+                <div id="myDropdown" className="dropdown-content">
+                    {
+                         coinNetwork.map((item, i) => (
+                                <div className='dropdown-item' key={i} onClick={() => selectAddress(item)}> 
+                                    <div className='dropdown-title'>
+                                        <img src={item.logoURI} alt={item.logoURI} />
+                                        <div className='dropdown-name'>{item.name} ({item.symbol})</div>
+                                    </div>
+                                    <div className='dropdown-address'>{item.address}</div>
+                                </div>
+                        ))
+                    }
+                </div>
               </div>
         </Modal>
     );

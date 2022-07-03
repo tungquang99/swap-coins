@@ -2,8 +2,8 @@
 
   export const coinNetwork = [
     {
-        "name": "Wrapped BNB",
-        "symbol": "WBNB",
+        "name": "Binance",
+        "symbol": "BNB",
         "address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
         "chainId": 56,
         "decimals": 18,
