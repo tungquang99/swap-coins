@@ -1,10 +1,8 @@
-import { Modal, Select } from 'antd';
+import { Modal } from 'antd';
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import SelectSearch, { fuzzySearch } from 'react-select-search';
+import { coinNetwork } from '../../constants/coins';
 import { layoutContext } from '../../layout/Layout';
 import './index.scss';
-
-const { Option } = Select;
 
 const SelectToken = ({ isOpen, closeModal }) => {
     const [listCoins, setListCoins] = useState([])
@@ -89,7 +87,19 @@ const SelectToken = ({ isOpen, closeModal }) => {
                             </div>
                     }
                 </div>
-
+                <div id="myDropdown" className="dropdown-content">
+                    {
+                         coinNetwork.map((item, i) => (
+                                <div className='dropdown-item' key={i} onClick={() => selectAddress(item)}> 
+                                    <div className='dropdown-title'>
+                                        <img src={item.logoURI} alt={item.logoURI} />
+                                        <div className='dropdown-name'>{item.name} ({item.symbol})</div>
+                                    </div>
+                                    <div className='dropdown-address'>{item.address}</div>
+                                </div>
+                        ))
+                    }
+                </div>
               </div>
         </Modal>
     );

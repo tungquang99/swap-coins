@@ -22,7 +22,6 @@ export function SelectWalletModal({ isOpen, closeModal }) {
     const connectWalletConnectSimple = async (activate, location, navigate, active) => {
         try {
             await activate(walletConnect);
-            console.log(await walletConnect.getAccount());
             if (await walletConnect.getAccount()) {
                 setWalletActive('wc', location, navigate)
             }
@@ -36,18 +35,18 @@ export function SelectWalletModal({ isOpen, closeModal }) {
         navigate(location.pathname);
     }
 
-    const signMessage = async () => {
-      try {
-          if (window.ethereum) {
-              await window.ethereum.send("eth_requestAccounts");
-              const provider = new ethers.providers.Web3Provider(walletConnect.walletConnectProvider ? walletConnect.walletConnectProvider : window.ethereum);
-              const signer = provider.getSigner();
-              const signature = await signer.signMessage('Connect wallet');
-          }
-      } catch (error) {
-          console.log(error);
-      }
-    } 
+    // const signMessage = async () => {
+    //   try {
+    //       if (window.ethereum) {
+    //           await window.ethereum.send("eth_requestAccounts");
+    //           const provider = new ethers.providers.Web3Provider(walletConnect.walletConnectProvider ? walletConnect.walletConnectProvider : window.ethereum);
+    //           const signer = provider.getSigner();
+    //           const signature = await signer.signMessage('Connect wallet');
+    //       }
+    //   } catch (error) {
+    //       console.log(error);
+    //   }
+    // } 
   return (
     <Modal title="Select Wallet" visible={isOpen} onCancel={closeModal}>
       {!getWallet() && (
@@ -78,7 +77,7 @@ export function SelectWalletModal({ isOpen, closeModal }) {
       {getWallet() && 
         <div>
             <div>Wallet connected: {account}</div>
-            <div onClick={signMessage}>Click here to add this address to account</div>
+            {/* <div onClick={signMessage}>Click here to add this address to account</div> */}
         </div>}
     </Modal>
   );

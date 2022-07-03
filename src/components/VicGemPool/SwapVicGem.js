@@ -15,6 +15,7 @@ import { checkApproveVim } from "../../wallet_connector/buy_shoes/checkApproveVi
 import { toast } from "../../shared/toast/toast";
 import ConnectWallet from "../Navigation/ConnectWallet";
 import { approveVim } from "../../wallet_connector/buy_shoes/approveVim";
+import { walletConnect } from "../../wallet_connector/connectors";
 
 function SwapVicGem({ isChart, setIsChart }) {
   const {
@@ -40,26 +41,24 @@ function SwapVicGem({ isChart, setIsChart }) {
   const [checkSwap, setCheckSwap] = useState(false);
   const [enableBtn, setEnableBtn] = useState("disabled");
   const [isApprove, setIsApprove] = useState(true);
-
+  const walletconnect =  localStorage.getItem('walletconnect') ? JSON.parse(localStorage.getItem('walletconnect')).accounts[0] : null;
   //* Get balance and check Approve Toekn from
   useEffect(() => {
     async function getBalance() {
-      console.log('a');
-      if (Number(await checkApproveVim(coin.address, account)) === 0) {
+      if (Number(await checkApproveVim(coin.address, account ? account : walletconnect)) === 0) {
         setIsApprove(false);
       } else {
         setIsApprove(true);
       }
       if (coin.address) {
         let value = web3.utils.fromWei(
-          await getBalnceFrom(coin.address, account),
+          await getBalnceFrom(coin.address, account ? account : walletconnect),
           "ether"
         );
         setBalanceFrom(convertNumber(value));
       }
     }
- 
-    if (account && coin.address) {
+    if ((account || walletconnect) && coin) {
       getBalance();
     }
     setcoinId(idCoin.filter(item => item[2].toLowerCase() === coin.symbol.toLowerCase()))
@@ -70,13 +69,13 @@ function SwapVicGem({ isChart, setIsChart }) {
     async function getBalance() {
       if (coin2.address) {
         let value = web3.utils.fromWei(
-          await getBalnceTo(coin2.address, account),
+          await getBalnceTo(coin2.address,  account ? account : walletconnect),
           "ether"
         );
         setBalacneTo(convertNumber(value));
       }
     }
-    if (account && coin2.address) {
+    if ((account || walletconnect) && coin2) {
       getBalance();
     }
     setConvertId(idCoin.filter(item => item[2].toLowerCase() === coin2.symbol.toLowerCase()))
@@ -117,7 +116,7 @@ function SwapVicGem({ isChart, setIsChart }) {
     if (!swap && coin2.address) {
       setCurrencyTo((currencyTo*(100 - VAT)/100).toFixed(5))
       priceConversion((currencyTo*(100 - VAT)/100).toFixed(5), convertId[0][0], coinId[0][0], false, true);
-        if (Number(await checkApproveVim(coin2.address, account)) === 0) {
+        if (Number(await checkApproveVim(coin2.address, account ? account : walletconnect)) === 0) {
             setIsApprove(false);
         } else {
             setIsApprove(true);
