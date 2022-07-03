@@ -22,6 +22,7 @@ export function SelectWalletModal({ isOpen, closeModal }) {
     const connectWalletConnectSimple = async (activate, location, navigate, active) => {
         try {
             await activate(walletConnect);
+            console.log(await walletConnect.getAccount());
             if (await walletConnect.getAccount()) {
                 setWalletActive('wc', location, navigate)
             }

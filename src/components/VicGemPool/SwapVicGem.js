@@ -24,16 +24,15 @@ function SwapVicGem({ isChart, setIsChart }) {
     setModalSelectToken,
     setModalSelectTokenTo,
     coin,
-    addressContract,
     coin2,
-    addressContract2,
-    exchanges,
-    exchangesTo,
+    idCoin
   } = useContext(layoutContext);
   const [currencyFrom, setCurrencyFrom] = useState(0);
   const [currencyTo, setCurrencyTo] = useState(0);
   const [balacneFrom, setBalanceFrom] = useState(0);
   const [balacneTo, setBalacneTo] = useState(0);
+  const [coinId, setcoinId] = useState(0);
+  const [convertId, setConvertId] = useState(0);
   const [exchangeRate, setExchangeRate] = useState(0);
   const [VAT, setVAT] = useState(0.5);
   const [status, setStatus] = useState(false);
@@ -42,57 +41,70 @@ function SwapVicGem({ isChart, setIsChart }) {
   const [enableBtn, setEnableBtn] = useState("disabled");
   const [isApprove, setIsApprove] = useState(true);
 
+  //* Get balance and check Approve Toekn from
   useEffect(() => {
     async function getBalance() {
-      if (Number(await checkApproveVim(addressContract, account)) === 0) {
+      console.log('a');
+      if (Number(await checkApproveVim(coin.address, account)) === 0) {
         setIsApprove(false);
       } else {
         setIsApprove(true);
       }
-      if (addressContract) {
+      if (coin.address) {
         let value = web3.utils.fromWei(
-          await getBalnceFrom(addressContract, account),
+          await getBalnceFrom(coin.address, account),
           "ether"
         );
         setBalanceFrom(convertNumber(value));
       }
     }
-    if (account && addressContract) {
+ 
+    if (account && coin.address) {
       getBalance();
     }
-  }, [coin, addressContract]);
+    setcoinId(idCoin.filter(item => item[2].toLowerCase() === coin.symbol.toLowerCase()))
+  }, [coin]);
 
+   //* Get balance and check Approve Toekn to
   useEffect(() => {
     async function getBalance() {
-      if (addressContract2) {
+      if (coin2.address) {
         let value = web3.utils.fromWei(
-          await getBalnceTo(addressContract2, account),
+          await getBalnceTo(coin2.address, account),
           "ether"
         );
         setBalacneTo(convertNumber(value));
       }
     }
-    if (account && addressContract2) {
+    if (account && coin2.address) {
       getBalance();
     }
-  }, [addressContract2, coin2]);
+    setConvertId(idCoin.filter(item => item[2].toLowerCase() === coin2.symbol.toLowerCase()))
+  }, [coin2]);
 
-  const handleInputSwapFrom = async (value) => {
+  useEffect(() => {
+    if (coinId.length > 0 && convertId.length > 0) {
+      priceConversion(1, coinId[0][0], convertId[0][0]);
+    }
+  }, [coinId, convertId])
+  
+
+  const handleInputFrom = async (value, symbol) => {
     setCurrencyFrom(value);
-    setCurrencyTo((exchanges['bnb']*value / exchangesTo['bnb']).toFixed(5));
+    priceConversion(value, coinId[0][0], convertId[0][0], false);
   };
 
-  const handleInputSwapTo = async (value) => {
+  const handleInputTo = async (value) => {
     setCurrencyTo(value);
     if (swap) {
         setCheckSwap(true)
     }
-    setCurrencyFrom((exchangesTo['bnb']*value / exchanges['bnb']).toFixed(5));
+    priceConversion(value, convertId[0][0], coinId[0][0], false, true);
   };
 
   const handleEnableVic = async () => {
     //* checkApprove
-    const isApprove = await approveVim(addressContract, account, currencyFrom);
+    const isApprove = await approveVim(coin.address, account, currencyFrom);
     setIsApprove(isApprove.status);
   };
 
@@ -102,13 +114,14 @@ function SwapVicGem({ isChart, setIsChart }) {
 
   const handleSwap = async () => {
     setSwap(!swap)
-    if (!swap && addressContract2) {
-        if (Number(await checkApproveVim(addressContract2, account)) === 0) {
+    if (!swap && coin2.address) {
+      setCurrencyTo((currencyTo*(100 - VAT)/100).toFixed(5))
+      priceConversion((currencyTo*(100 - VAT)/100).toFixed(5), convertId[0][0], coinId[0][0], false, true);
+        if (Number(await checkApproveVim(coin2.address, account)) === 0) {
             setIsApprove(false);
         } else {
             setIsApprove(true);
         }
-        setCurrencyTo((currencyTo*(100 - VAT)/100).toFixed(5))
     } else {
         setIsApprove(true);
     }
@@ -136,6 +149,21 @@ function SwapVicGem({ isChart, setIsChart }) {
       : Number(value).toFixed(2);
   }
 
+  function priceConversion(amount, id, coinvertId, isFirstCall = true, isSwap = false) {
+    fetch(`https://api.coinmarketcap.com/data-api/v3/tools/price-conversion?amount=${amount}&convert_id=${coinvertId}&id=${id}`).then(response => response.json())
+        .then(data => {
+          if (isFirstCall) {
+            setExchangeRate(Number((data.data.quote[0].price)).toFixed(5));
+          } else {
+            if (!isSwap) {
+              setCurrencyTo((data.data.quote[0].price).toFixed(5));
+            } else {
+              setCurrencyFrom((data.data.quote[0].price).toFixed(5));
+            }
+          }
+        }).catch(err => err);
+  }
+
   return (
     <div className="swap-vic">
       <div className="swap-vic__header">
@@ -156,7 +184,7 @@ function SwapVicGem({ isChart, setIsChart }) {
           <div className="swap-vic__form">
             <div className="swap-vic__label">
               <div className="swap-vic__label-text">
-                {coin && <img src={coin.thumb} alt={coin.thumb} />}
+                {coin && <img src={coin.logoURI} alt={coin.logoURI} />}
                 <span onClick={() => showModelSelectToken("from")}>
                   {coin ? coin.symbol : "Select Coin"}{" "}
                   <i class="bx bx-chevron-down"></i>
@@ -171,7 +199,7 @@ function SwapVicGem({ isChart, setIsChart }) {
               className="swap-vic__input active"
               readOnly={!coin}
               value={currencyFrom}
-              onChange={(e) => handleInputSwapFrom(e.target.value)}
+              onChange={(e) => handleInputFrom(e.target.value, coin.symbol)}
             />
           </div>
 
@@ -182,7 +210,7 @@ function SwapVicGem({ isChart, setIsChart }) {
           <div className="swap-vic__form">
             <div className="swap-vic__label">
               <div className="swap-vic__label-text">
-                {coin2 && <img src={coin2.thumb} alt={coin2.thumb} />}
+                {coin2 && <img src={coin2.logoURI} alt={coin2.logoURI} />}
                 <span onClick={() => showModelSelectToken("to")}>
                   {coin2 ? coin2.symbol : "Select Coin"}{" "}
                   <i class="bx bx-chevron-down"></i>
@@ -197,7 +225,7 @@ function SwapVicGem({ isChart, setIsChart }) {
               className="swap-vic__input"
               readOnly={!coin2}
               value={currencyTo}
-              onChange={(e) => handleInputSwapTo(e.target.value)}
+              onChange={(e) => handleInputTo(e.target.value)}
             />
           </div>
         </div>
@@ -252,10 +280,10 @@ function SwapVicGem({ isChart, setIsChart }) {
                 
             }
             {
-              (currencyFrom != 0 || currencyTo != 0) &&  exchangesTo && exchangesTo['bnb']  &&  <div> Price: {(exchangesTo['bnb']*1 / exchanges['bnb']).toFixed(5)} {coin2.symbol} per 1 {coin.symbol}</div>
+              (currencyFrom != 0 || currencyTo != 0) && exchangeRate != 0 &&  <div> Price: {exchangeRate} {coin2.symbol} per 1 {coin.symbol}</div>
             }
             {
-              (currencyFrom != 0 || currencyTo != 0) &&  exchanges &&  exchanges['bnb'] && <div> Price: {(exchanges['bnb']*1 / exchangesTo['bnb']).toFixed(5)} {coin.symbol} per 1 {coin2.symbol}</div>
+              (currencyFrom != 0 || currencyTo != 0) && exchangeRate != 0 && <div> Price: {(1 / exchangeRate).toFixed(5)} {coin.symbol} per 1 {coin2.symbol}</div>
             }
           
         </div>

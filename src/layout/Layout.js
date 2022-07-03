@@ -16,12 +16,10 @@ function Layout() {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isModalSelectToken, setModalSelectToken] = useState(false);
     const [isModalSelectTokenTo, setModalSelectTokenTo] = useState(false);
-    const [addressContract, setAddressContract] = useState('')
     const [coin, setCoin] = useState(null)
-    const [addressContract2, setAddressContract2] = useState('')
     const [coin2, setCoin2] = useState(null)
-    const [exchanges, setExchange] = useState(null)
-    const [exchangesTo, setExchangeTo] = useState(null)
+    const [coins, setCoins] = useState([])
+    const [idCoin, setIdCoin] = useState([])
     const {coinsETH} = useETH();
     const {coinsMATIC} = useMATIC();
     const value = {
@@ -37,18 +35,12 @@ function Layout() {
         setIsModalVisible: setIsModalVisible,
         setModalSelectToken: setModalSelectToken,
         setModalSelectTokenTo: setModalSelectTokenTo,
-        addressContract: addressContract,
-        setAddressContract: setAddressContract,
+        coins: coins, setCoins: setCoins,
+        idCoin: idCoin, setIdCoin: setIdCoin,
         setCoin: setCoin,
         coin: coin,
-        addressContract2: addressContract2,
-        setAddressContract2: setAddressContract2,
         setCoin2: setCoin2,
         coin2: coin2,
-        exchanges,
-        setExchange,
-        exchangesTo,
-        setExchangeTo
     }
 
     const handleCancel = () => {
@@ -56,6 +48,24 @@ function Layout() {
         setModalSelectToken(false);
         setModalSelectTokenTo(false);
     };
+
+    useEffect(() => {
+        getAllCoins();
+        getIdCoin();
+        async function getAllCoins() {
+            fetch(`https://tokens.pancakeswap.finance/coingecko.json`).then(response => response.json())
+            .then(data => {
+                setCoins(data.tokens)
+            }).catch(err => err);
+        }
+        async function getIdCoin() {
+            fetch(`https://s3.coinmarketcap.com/generated/core/crypto/cryptos.json`).then(response => response.json())
+            .then(data => {
+                setIdCoin(data.values)
+            }).catch(err => err);
+        }
+    }, [])
+    
 
     return (
         <layoutContext.Provider value={value}>
