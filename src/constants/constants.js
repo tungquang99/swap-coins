@@ -1,3 +1,6 @@
+import { Token } from "@pancakeswap/sdk";
+import { ethers } from "ethers";
+const token_default = require('../abi/default.json')
 export const URL_GG_AUTH = "https://accounts.google.com/gsi/client";
 export const clientId =
   "555354940070-2dfgfm3evbboetca3crh40gr37jvrt8r.apps.googleusercontent.com";
@@ -8,8 +11,14 @@ export const contractAddress = {
   balanceVic: "0x53F542f581cA69076eB2c08f8E2aab97C07d21Dd",
   balanceVicGem: "0x3726a973d75f3999ea320DB2558B45104421807e",
   checkBuySell: "0x8CEf52aaa7BbaE1C95518DDa65632246B1a47E78",
-  spender: "0x10ED43C718714eb63d5aA57B78B54704E256024E"
+  spender: "0x10ED43C718714eb63d5aA57B78B54704E256024E",
 };
+
+export const tokenDefault = token_default.map((item) => {
+  return  new Token(56, item.address, 18, item.symbol, item.name);
+})
+export const web3Provider = new ethers.providers.JsonRpcProvider('https://bsc-dataseed.binance.org/')
+
 
 export const abiApprove = [
   { inputs: [], stateMutability: "nonpayable", type: "constructor" },
@@ -1021,7 +1030,7 @@ export const abiApproveVICGEMNFT = [
     stateMutability: "nonpayable",
     type: "function",
   },
- 
+
   {
     inputs: [
       { internalType: "uint256[]", name: "lstGemID", type: "uint256[]" },
@@ -2829,4 +2838,131 @@ export const abiContract = [
     stateMutability: "view",
     type: "function",
   },
-]
+  {
+    inputs: [
+      { internalType: "uint256", name: "amountOut", type: "uint256" },
+      { internalType: "address[]", name: "path", type: "address[]" },
+      { internalType: "address", name: "to", type: "address" },
+      { internalType: "uint256", name: "deadline", type: "uint256" },
+    ],
+    name: "swapETHForExactTokens",
+    outputs: [
+      { internalType: "uint256[]", name: "amounts", type: "uint256[]" },
+    ],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "uint256", name: "amountOutMin", type: "uint256" },
+      { internalType: "address[]", name: "path", type: "address[]" },
+      { internalType: "address", name: "to", type: "address" },
+      { internalType: "uint256", name: "deadline", type: "uint256" },
+    ],
+    name: "swapExactETHForTokens",
+    outputs: [
+      { internalType: "uint256[]", name: "amounts", type: "uint256[]" },
+    ],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "uint256", name: "amountOutMin", type: "uint256" },
+      { internalType: "address[]", name: "path", type: "address[]" },
+      { internalType: "address", name: "to", type: "address" },
+      { internalType: "uint256", name: "deadline", type: "uint256" },
+    ],
+    name: "swapExactETHForTokensSupportingFeeOnTransferTokens",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "uint256", name: "amountIn", type: "uint256" },
+      { internalType: "uint256", name: "amountOutMin", type: "uint256" },
+      { internalType: "address[]", name: "path", type: "address[]" },
+      { internalType: "address", name: "to", type: "address" },
+      { internalType: "uint256", name: "deadline", type: "uint256" },
+    ],
+    name: "swapExactTokensForETH",
+    outputs: [
+      { internalType: "uint256[]", name: "amounts", type: "uint256[]" },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "uint256", name: "amountIn", type: "uint256" },
+      { internalType: "uint256", name: "amountOutMin", type: "uint256" },
+      { internalType: "address[]", name: "path", type: "address[]" },
+      { internalType: "address", name: "to", type: "address" },
+      { internalType: "uint256", name: "deadline", type: "uint256" },
+    ],
+    name: "swapExactTokensForETHSupportingFeeOnTransferTokens",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "uint256", name: "amountIn", type: "uint256" },
+      { internalType: "uint256", name: "amountOutMin", type: "uint256" },
+      { internalType: "address[]", name: "path", type: "address[]" },
+      { internalType: "address", name: "to", type: "address" },
+      { internalType: "uint256", name: "deadline", type: "uint256" },
+    ],
+    name: "swapExactTokensForTokens",
+    outputs: [
+      { internalType: "uint256[]", name: "amounts", type: "uint256[]" },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "uint256", name: "amountIn", type: "uint256" },
+      { internalType: "uint256", name: "amountOutMin", type: "uint256" },
+      { internalType: "address[]", name: "path", type: "address[]" },
+      { internalType: "address", name: "to", type: "address" },
+      { internalType: "uint256", name: "deadline", type: "uint256" },
+    ],
+    name: "swapExactTokensForTokensSupportingFeeOnTransferTokens",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "uint256", name: "amountOut", type: "uint256" },
+      { internalType: "uint256", name: "amountInMax", type: "uint256" },
+      { internalType: "address[]", name: "path", type: "address[]" },
+      { internalType: "address", name: "to", type: "address" },
+      { internalType: "uint256", name: "deadline", type: "uint256" },
+    ],
+    name: "swapTokensForExactETH",
+    outputs: [
+      { internalType: "uint256[]", name: "amounts", type: "uint256[]" },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "uint256", name: "amountOut", type: "uint256" },
+      { internalType: "uint256", name: "amountInMax", type: "uint256" },
+      { internalType: "address[]", name: "path", type: "address[]" },
+      { internalType: "address", name: "to", type: "address" },
+      { internalType: "uint256", name: "deadline", type: "uint256" },
+    ],
+    name: "swapTokensForExactTokens",
+    outputs: [
+      { internalType: "uint256[]", name: "amounts", type: "uint256[]" },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+];
+

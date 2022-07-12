@@ -14,11 +14,8 @@ export const injected = new InjectedConnector({
 
 export const walletConnect = new WalletConnectConnector({
     rpc: {
-        1: "https://cloudflare-eth.com/", // https://ethereumnodes.com/
         56: "https://bsc-dataseed.binance.org/",
-        137: "https://polygon-rpc.com/", // https://docs.polygon.technology/docs/develop/network-details/network/
     },
-    supportedChainIds: [1, 3, 4, 5, 42, 56, 137],
     qrcode: true,
     pollingInterval: 5000
 });

@@ -12,9 +12,7 @@ export const useEagerConnect = () => {
                }
             });
         } else if (localStorage.getItem('wallet') === 'wc') {
-            if (!localStorage.getItem('walletconnect')) {
-                activate(walletConnect)
-            }
+            activate(walletConnect)
            
         }
     }, [activate])

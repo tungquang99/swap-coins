@@ -8,10 +8,19 @@ import { useEagerConnect } from './../hooks/useEagerConnect';
 import { SelectWalletModal } from '../components/Modal/SelectWalletModal';
 import SelectToken from '../components/Modal/SelectToken';
 import SelectTokenTo from '../components/Modal/SelectTokenTo';
+import { Token } from '@pancakeswap/sdk';
+import { getPair } from '../hooks/getPair';
+import { ethers } from 'ethers';
+import { tokenDefault } from '../constants/constants';
 
 export const layoutContext = createContext();
+
 function Layout() {
     useAuthGoogle();
+    useEffect(() => {
+       
+    }, [])
+    
     const {active, deactivate, library, error, chainId, account, activate} = useEagerConnect();
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isModalSelectToken, setModalSelectToken] = useState(false);
@@ -20,11 +29,8 @@ function Layout() {
     const [coin2, setCoin2] = useState(null)
     const [coins, setCoins] = useState([])
     const [idCoin, setIdCoin] = useState([])
-    const {coinsETH} = useETH();
-    const {coinsMATIC} = useMATIC();
+    const [allPairsDefault, setAllPairsDefault] = useState([])
     const value = {
-        coinsETH : coinsETH,
-        coinsMATIC: coinsMATIC,
         active: active,
         library: library,
         error: error,
@@ -41,6 +47,7 @@ function Layout() {
         coin: coin,
         setCoin2: setCoin2,
         coin2: coin2,
+        allPairsDefault: allPairsDefault
     }
 
     const handleCancel = () => {
@@ -65,6 +72,26 @@ function Layout() {
             }).catch(err => err);
         }
     }, [])
+
+    useEffect(() => {
+      async function getAllPairDefault() {
+        const pair_default = await Promise.all(
+            tokenDefault.map(async (item) => {
+                return await Promise.all(tokenDefault.map(async (item0) => {
+                        if (!item.equals(item0)) {
+                            return await getPair(item, item0)
+                        } else {
+                            return null
+                        }
+                    }))
+            })
+        )
+        setAllPairsDefault(pair_default);
+       }
+
+       getAllPairDefault();
+    }, [])
+    
     
 
     return (
