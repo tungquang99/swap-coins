@@ -1,4 +1,4 @@
-import { Token } from "@pancakeswap/sdk";
+import { JSBI, Token } from "@pancakeswap/sdk";
 import { ethers } from "ethers";
 const token_default = require('../abi/default.json')
 export const URL_GG_AUTH = "https://accounts.google.com/gsi/client";
@@ -18,7 +18,13 @@ export const tokenDefault = token_default.map((item) => {
   return  new Token(56, item.address, 18, item.symbol, item.name);
 })
 export const web3Provider = new ethers.providers.JsonRpcProvider('https://bsc-dataseed.binance.org/')
+export const BIPS_BASE = JSBI.BigInt(10000)
 
+export const SwapCallbackState = {
+  INVALID: 0,
+  LOADING: 1,
+  VALID: 2,
+}
 
 export const abiApprove = [
   { inputs: [], stateMutability: "nonpayable", type: "constructor" },

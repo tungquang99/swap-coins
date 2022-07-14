@@ -15,6 +15,6 @@ export const useEagerConnect = () => {
             activate(walletConnect)
            
         }
-    }, [activate])
+    }, [active, deactivate, library, error, chainId, account, activate])
     return {active, deactivate, library, error, chainId, account, activate};
 }

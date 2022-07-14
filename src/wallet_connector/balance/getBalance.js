@@ -29,7 +29,9 @@ export const swapCoin = async (account, amountFrom, amountTo, routeAddress) => {
     const amountOut = web3.utils.toWei(amountTo.toString(), 'ether');
     const addressArray = routeAddress;
     const timestamp = Date.now();
-    
+    console.log([
+        amountIn, 0, addressArray, account, timestamp
+    ]);
     const tx = {
         from: account,
         to: contractAddress.spender,

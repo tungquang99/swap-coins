@@ -1,4 +1,4 @@
-import React, { Fragment, useContext, useEffect, useState } from "react";
+import React, { Fragment, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { getToken } from "../../Auth/token";
 import { RENDER_IMAGE } from "../../constants/render-image";
@@ -9,6 +9,7 @@ import {
   checkSellPrice,
   getBalnceFrom,
   getBalnceTo,
+  SwapCoin,
   swapCoin,
 } from "../../wallet_connector/balance/getBalance";
 import "./Vicgempool.scss";
@@ -17,10 +18,12 @@ import { toast } from "../../shared/toast/toast";
 import ConnectWallet from "../Navigation/ConnectWallet";
 import { approveVim } from "../../wallet_connector/buy_shoes/approveVim";
 import { walletConnect } from "../../wallet_connector/connectors";
-import {  JSBI, Pair, Token, TokenAmount, Trade } from '@pancakeswap/sdk'
+import {  CurrencyAmount, JSBI, Pair, Percent, Token, TokenAmount, Trade } from '@pancakeswap/sdk'
 import { ethers } from "ethers";
 import { getPair } from "../../hooks/getPair";
-import { tokenDefault } from "../../constants/constants";
+import { contractAddress, tokenDefault } from "../../constants/constants";
+import { SwapCallback } from "../../hooks/useSwapCallback";
+import { parseUnits } from "ethers/lib/utils";
 const token_default = require('../../abi/default.json')
 
 function SwapVicGem({ isChart, setIsChart }) {
@@ -33,7 +36,8 @@ function SwapVicGem({ isChart, setIsChart }) {
     coin,
     coin2,
     idCoin, 
-    allPairsDefault
+    allPairsDefault,
+    chainId
   } = useContext(layoutContext);
   const [currencyFrom, setCurrencyFrom] = useState(0);
   const [base1, setBase1] = useState([]);
@@ -48,19 +52,19 @@ function SwapVicGem({ isChart, setIsChart }) {
   const [priceImpact, setPriceImpact] = useState(null);
   const [exchangeRate, setExchangeRate] = useState(0);
   const [exchangeRateTo, setExchangeRateTo] = useState(0);
-  const [VAT, setVAT] = useState(0.5);
+  const [VAT, setVAT] = useState(9);
   const [status, setStatus] = useState(false);
   const [swap, setSwap] = useState(false);
   const [checkSwap, setCheckSwap] = useState(false);
   const [enableBtn, setEnableBtn] = useState("disabled");
   const [isApprove, setIsApprove] = useState(true);
-  const walletconnect =  localStorage.getItem('walletconnect') ? JSON.parse(localStorage.getItem('walletconnect')).accounts[0] : null;
   const MAX_HOPS = 3;
+  const typingTimeoutRef = useRef(null);
 
   //* Get balance and check Approve Toekn from
   useEffect(() => {
     async function getBalance() {
-      if (Number(await checkApproveVim(coin.address, account ? account : walletconnect)) === 0 && !token_default.some(item => item.address === coin.address)) {
+      if (Number(await checkApproveVim(coin.address, account )) === 0 && !token_default.some(item => item.address === coin.address)) {
         setIsApprove(false);
       } else {
         setIsApprove(true);
@@ -69,11 +73,13 @@ function SwapVicGem({ isChart, setIsChart }) {
         const {token, pair} = await setPairToken(coin)
         setToken1(token)
         setBase1(pair)
-        let value = web3.utils.fromWei(
-          await getBalnceFrom(coin.address, account ? account : walletconnect),
-          "ether"
-        );
-        setBalanceFrom(convertNumber(value));
+        setInterval(async() => {
+          let value = web3.utils.fromWei(
+            await getBalnceFrom(coin.address, account ),
+            "ether"
+          );
+          setBalanceFrom(convertNumber(value));
+        }, 3000);
       }
 
       if (coin && coin.isNetwork) {
@@ -83,11 +89,11 @@ function SwapVicGem({ isChart, setIsChart }) {
         setBalanceFrom(Number(balance).toFixed(5));
       }
     }
-    if ((account || walletconnect) && coin) {
+    if ((account) && coin) {
       getBalance();
     }
    // setcoinId(idCoin.filter(item => item[2].toLowerCase() === coin.symbol.toLowerCase()))
-  }, [coin]);
+  }, [coin, account]);
 
    //* Get balance and check Approve Toekn to
   useEffect(() => {
@@ -97,11 +103,13 @@ function SwapVicGem({ isChart, setIsChart }) {
         setToken2(token)
         setBase2(pair)
         const allPairs = [...base1, ...base2, ...allPairsDefault.flat(1)].filter(item => item !== null);
-        let value = web3.utils.fromWei(
-          await getBalnceTo(coin2.address,  account ? account : walletconnect),
-          "ether"
-        );
-        setBalacneTo(convertNumber(value));
+        setInterval(async() => {
+          let value = web3.utils.fromWei(
+            await getBalnceTo(coin2.address,  account),
+            "ether"
+          );
+          setBalacneTo(convertNumber(value));
+        }, 3000);
       }
 
       if (coin2 && coin2.isNetwork) {
@@ -111,11 +119,11 @@ function SwapVicGem({ isChart, setIsChart }) {
         setBalacneTo(Number(balance).toFixed(5));
       }
     }
-    if ((account || walletconnect) && coin2) {
+    if ((account) && coin2) {
       getBalance();
     }
    // setConvertId(idCoin.filter(item => item[2].toLowerCase() === coin2.symbol.toLowerCase()))
-  }, [coin2]);
+  }, [coin2, account]);
 
   const setPairToken = async (coin) => {
     const token = new Token(56, coin.address, 18, coin.symbol, coin.name)
@@ -127,41 +135,61 @@ function SwapVicGem({ isChart, setIsChart }) {
 
   const handleInputFrom = async (value) => {
     setCurrencyFrom(value);
-    if (value !== '') {
-      const bestTradeSoFar = getInfoPair(token1, token2)
-      setCurrencyTo(value * bestTradeSoFar['route'].midPrice.toSignificant(6));
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current)
     }
+    typingTimeoutRef.current = setTimeout(async() => {
+      if (account) {
+        if (value !== '' && coin2 && coin2.address) { 
+          const bestTradeSoFar = getInfoPair(token1, token2, value)
+          if (bestTradeSoFar !== null) setCurrencyTo(bestTradeSoFar.outputAmount.toSignificant(6));
+        }
+      }
+    }, 500)
   };
 
   const handleInputTo = async (value) => {
     setCurrencyTo(value);
-    if (swap) {
-        setCheckSwap(true)
-        if (value !== '') {
-          const bestTradeSoFar = getInfoPair(token2, token1)
-          setCurrencyFrom(value * bestTradeSoFar['route'].midPrice.toSignificant(6));
-        }
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current)
     }
+    typingTimeoutRef.current = setTimeout(async() => {
+      if (swap) {
+          setCheckSwap(true)
+          if (value !== '' && account && coin && coin.address) {
+            const bestTradeSoFar = getInfoPair(token2, token1, value)
+              if (bestTradeSoFar !== null) setCurrencyFrom(bestTradeSoFar.outputAmount.toSignificant(6))
+          }
+      }
+    }, 500)
   };
 
-  const getInfoPair = (currencyAmountIn, currencyOut) => {
+  const getInfoPair = (currencyAmountIn, currencyOut, value, isTrade = true) => {  
     if (base2) {
       const allPairs = [...base1, ...base2, ...allPairsDefault.flat(1)].filter(item => item !== null);
       let bestTradeSoFar = null
         for (let i = 1; i <= MAX_HOPS; i++) {
           const currentTrade =
-            Trade.bestTradeExactIn(allPairs, new TokenAmount(currencyAmountIn, '1000000000000000'), currencyOut, { maxHops: i, maxNumResults: 3 })[0] ??
-            null
+          (isTrade ? Trade.bestTradeExactIn(allPairs, getAmountIn(value, currencyAmountIn), currencyOut, { maxHops: i, maxNumResults: 1 })[0] :
+          Trade.bestTradeExactOut(allPairs, currencyAmountIn,  getAmountIn(value, currencyOut), { maxHops: i, maxNumResults: 1 })[0]) ?? null
           bestTradeSoFar = currentTrade
       }
-      const symbol = bestTradeSoFar['route']['path'].map(item => item.symbol)
-      setRouterAddress(bestTradeSoFar['route']['path'].map(item => item.address))
-      setRouter(symbol.join(" > "));
-      setPriceImpact(bestTradeSoFar['priceImpact'].toFixed(2))
-      setExchangeRate(bestTradeSoFar.executionPrice.toSignificant(6));
-      setExchangeRateTo(bestTradeSoFar.executionPrice.invert().toSignificant(6));
+      if (bestTradeSoFar !== null) {
+        const symbol = bestTradeSoFar['route']['path'].map(item => item.symbol)
+        setRouterAddress(bestTradeSoFar['route']['path'].map(item => item.address))
+        setRouter(symbol.join(" > "));
+        setPriceImpact(bestTradeSoFar['priceImpact'].toFixed(2))
+        setExchangeRate(bestTradeSoFar.executionPrice.toSignificant(6));
+        setExchangeRateTo(bestTradeSoFar.executionPrice.invert().toSignificant(6));
+      }
+    
       return bestTradeSoFar; 
     }
+  }
+
+  function getAmountIn(value, currency) {
+    return  token_default.some(item => item.address === coin.address) ||  token_default.some(item => item.address === coin.address) ? CurrencyAmount.ether(parseUnits(value, currency.decimals).toString()) 
+      : new TokenAmount(currency, web3.utils.toWei(value.toString(), 'ether'))
   }
 
   const handleEnableVic = async () => {
@@ -177,28 +205,28 @@ function SwapVicGem({ isChart, setIsChart }) {
   const handleSwap = async () => {
     setSwap(!swap)
     if (!swap && coin2.address) {
-        if (Number(await checkApproveVim(coin2.address, account ? account : walletconnect)) === 0 && !token_default.some(item => item.address === coin.address)) {
+        if (Number(await checkApproveVim(coin2.address, account)) === 0 && !token_default.some(item => item.address === coin2.address)) {
             setIsApprove(false);
         } else {
             setIsApprove(true);
         }
-        const bestTradeSoFar = getInfoPair(token2, token1)
         if (currencyTo != 0) {
-          setCurrencyTo(bestTradeSoFar.executionPrice.invert().toSignificant(6))
+          const bestTradeSoFar = getInfoPair(token2, token1, currencyFrom, false)
+          if (bestTradeSoFar !== null) setCurrencyTo(bestTradeSoFar.inputAmount.toExact(9))
         }
     } else {
-        if (Number(await checkApproveVim(coin.address, account ? account : walletconnect)) === 0 && !token_default.some(item => item.address === coin.address)) {
+        if (Number(await checkApproveVim(coin.address, account)) === 0 && !token_default.some(item => item.address === coin.address)) {
             setIsApprove(false);
         } else {
             setIsApprove(true);
         }
-        const bestTradeSoFar = getInfoPair(token1, token2)
         if (currencyTo != 0) {
-          setCurrencyTo(bestTradeSoFar.executionPrice.toSignificant(6))
+          const bestTradeSoFar = getInfoPair(token1, token2, currencyFrom)
+          if (bestTradeSoFar !== null) setCurrencyTo(bestTradeSoFar.outputAmount.toSignificant(6))
         }
     }
 
-    if (checkSwap) {
+    if (checkSwap) { 
         setCheckSwap(false)
     }
   }
@@ -221,35 +249,27 @@ function SwapVicGem({ isChart, setIsChart }) {
       ? Number(value)
       : Number(value).toFixed(3);
   }
-
-  const onSubmitSwapCoin =  () => {
-    setInterval(async () => {
-      const {token: token1, pair: pair1} = await setPairToken(coin);
-      setToken1(token1)
-      setBase1(pair1)
-      const {token: token2, pair: pair2} = await setPairToken(coin2);
-      setToken2(token2)
-      setBase2(pair2)
-      
-    }, 500000);
-
-    if ((coin && coin['isNetwork']) || (coin2 && coin2['isNetwork'])) {
-        swapCoin(account, currencyFrom, (currencyTo*(100 - VAT)/100).toFixed(5), routerAddress)
-    } else {
-        if (!swap) {
-          setInterval(() => {
-            const bestTradeSoFar = getInfoPair(currencyFrom, currencyTo)
-            setCurrencyTo(bestTradeSoFar.executionPrice.toSignificant(6))
-          }, 500000);
-          swapCoin(account, currencyFrom, (currencyTo*(100 - VAT)/100).toFixed(5), routerAddress)
-        } else {
-            setInterval(() => {
-              const bestTradeSoFar = getInfoPair(currencyTo, currencyFrom)
-              setCurrencyTo(bestTradeSoFar.executionPrice.invert().toSignificant(6))
-            }, 500000);
-            swapCoin(account, (currencyTo/((100 - VAT)/100)).toFixed(5), currencyFrom, routerAddress)
-        }
-    }
+  const OnSubmitSwapCoin = async () => {
+    const bestTradeSoFar = !swap ? getInfoPair(token1, token2, currencyFrom) : getInfoPair(token2, token1, currencyTo)
+    if (bestTradeSoFar !== null) await SwapCallback(bestTradeSoFar, VAT*100, account, chainId, library)
+    // swapCoin(bestTradeSoFar, VAT*100)
+    // if ((coin && coin['isNetwork']) || (coin2 && coin2['isNetwork'])) {
+    //     swapCoin(account, currencyFrom, (currencyTo*(100 - VAT)/100).toFixed(5), routerAddress)
+    // } else {
+    //     if (!swap) {
+    //       setInterval(() => {
+    //         const bestTradeSoFar = getInfoPair(currencyFrom, currencyTo)
+    //         setCurrencyTo(bestTradeSoFar.executionPrice.toSignificant(6))
+    //       }, 500000);
+    //       swapCoin(account, currencyFrom, (currencyTo*(100 - VAT)/100).toFixed(5), routerAddress)
+    //     } else {
+    //         setInterval(() => {
+    //           const bestTradeSoFar = getInfoPair(currencyTo, currencyFrom)
+    //           setCurrencyTo(bestTradeSoFar.executionPrice.invert().toSignificant(6))
+    //         }, 500000);
+    //         swapCoin(account, (currencyTo/((100 - VAT)/100)).toFixed(5), currencyFrom, routerAddress)
+    //     }
+    // }
   }
 
   return (
@@ -355,10 +375,10 @@ function SwapVicGem({ isChart, setIsChart }) {
                 !checkSwap && 
                   <Fragment>
                      {
-                        (currencyFrom != 0 || currencyTo != 0) && coin2 && !swap && <div>Minimum Received: {(currencyTo*(100 - VAT)/100).toFixed(5)}  {coin2.symbol}</div>
+                        (currencyFrom != 0 || currencyTo != 0) && coin2 && !swap && account && <div>Minimum Received: {(currencyTo*(100 - VAT)/100).toFixed(5)}  {coin2.symbol}</div>
                      }
                      {
-                        (currencyFrom != 0 || currencyTo != 0) && coin2 && swap && <div>Minimum Sold: {(currencyTo/((100 - VAT)/100)).toFixed(5)}  {coin2.symbol}</div>
+                        (currencyFrom != 0 || currencyTo != 0) && coin2 && swap && account && <div>Minimum Sold: {(currencyTo/((100 - VAT)/100)).toFixed(5)}  {coin2.symbol}</div>
                      }
                   </Fragment>  
             }
@@ -367,10 +387,10 @@ function SwapVicGem({ isChart, setIsChart }) {
                 checkSwap && 
                   <Fragment>
                      {
-                        (currencyFrom != 0 || currencyTo != 0) && coin2 && checkSwap && <div>Minimum Received: {(currencyTo*(100 - VAT)/100).toFixed(5)}  {coin2.symbol}</div>
+                        (currencyFrom != 0 || currencyTo != 0) && coin2 && checkSwap && account && <div>Minimum Received: {(currencyTo*(100 - VAT)/100).toFixed(5)}  {coin2.symbol}</div>
                      }
                      {
-                        (currencyFrom != 0 || currencyTo != 0) && coin2 && !checkSwap && <div>Minimum Sold: {(currencyTo/((100 - VAT)/100)).toFixed(5)}  {coin2.symbol}</div>
+                        (currencyFrom != 0 || currencyTo != 0) && coin2 && !checkSwap && account && <div>Minimum Sold: {(currencyTo/((100 - VAT)/100)).toFixed(5)}  {coin2.symbol}</div>
                      }
                   </Fragment>
                 
@@ -424,9 +444,9 @@ function SwapVicGem({ isChart, setIsChart }) {
               <div className="swap-vic__actions">
                 <div
                   className={`swap-vic__btn swap-vic__btn-isapprove swap-vic__btn-${
-                    currencyFrom != 0 || currencyTo != 0
+                    (currencyFrom != 0 || currencyTo != 0) && (coin && coin.address !== null && coin2 && coin2.address !== null)
                   }`}
-                  onClick={onSubmitSwapCoin}
+                  onClick={OnSubmitSwapCoin}
                 >
                   Swap
                 </div>

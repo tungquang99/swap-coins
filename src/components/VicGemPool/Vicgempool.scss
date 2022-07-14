@@ -243,6 +243,10 @@
             background-color: $primary;
         }
 
+        &-false {
+            pointer-events: none;
+        }
+
         &-action {
             width: 100%;
             background-color: $primary;

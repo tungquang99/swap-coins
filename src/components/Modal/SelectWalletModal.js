@@ -48,7 +48,7 @@ export function SelectWalletModal({ isOpen, closeModal }) {
     //   }
     // } 
   return (
-    <Modal title="Select Wallet" visible={isOpen} onCancel={closeModal}>
+    <Modal title="Select Wallet" visible={isOpen} onCancel={closeModal} onOk={closeModal}>
       {!getWallet() && (
         <div>
           <Button
