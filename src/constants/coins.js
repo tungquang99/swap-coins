@@ -17,7 +17,7 @@
         "chainId": 56,
         "decimals": 18,
         "logoURI": "https://assets.coingecko.com/coins/images/9576/thumb/BUSD.png",
-        "network": true
+        "isNetwork": true
     },
     {
         "name": "Tether",

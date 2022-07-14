@@ -60,41 +60,45 @@ export async function SwapCallback(trade, allowedSlippage, account, chainId, lib
         })
     )
     console.log(estimatedCalls);
-
     //a successful estimation is a bignumber gas estimate and the next call is also a bignumber gas estimate
     const successfulEstimation = estimatedCalls.find((el, ix, list) => {
-        if (el !== undefined) return 'gasEstimate' in el && (ix === list.length - 1 || 'gasEstimate' in list[ix + 1])
+        console.log();
+        if (list.includes(undefined)) {
+            return 'gasEstimate' in el
+        } else {
+            return 'gasEstimate' in el && (ix === list.length - 1 || (list[ix + 1] && 'gasEstimate' in list[ix + 1]))
+        }
     })
 
     if (!successfulEstimation) {
-        const errorCalls = estimatedCalls.filter((call) => 'error' in call)
-        if (errorCalls.length > 0) throw new Error(errorCalls[errorCalls.length - 1].error)
-        throw new Error('Unexpected error. Could not estimate gas for the swap.')
+        toast('error', 'Unexpected error. Could not estimate gas for the swap.')
+        return false;
+    } else {
+        const {
+            call: {
+              contracts,
+              parameters: { methodName, args, value },
+            },
+            gasEstimate,
+        } = successfulEstimation
+        return contracts[methodName](...args, {
+            gasLimit: gasEstimate,
+            gasPrice,
+            ...(value && !isZero(value) ? { value, from: account } : { from: account }),
+        }).then(res => notification.open({
+                        message: 'Visit the Binance Smart Chain page to view transaction details',
+                        description: '',
+                        btn: btn(res.hash), 
+                        placement: 'top'
+                    })
+          )
+        .catch(err => {
+            if (err?.code === 4001) {
+                toast('error', 'Transaction rejected.');
+              } else {
+                // otherwise, the error was unexpected and we need to convey that
+                toast('error', [`Swap failed`, err, methodName, args, value]);
+              }
+            })
     }
-    const {
-        call: {
-          contracts,
-          parameters: { methodName, args, value },
-        },
-        gasEstimate,
-    } = successfulEstimation
-    return contracts[methodName](...args, {
-        gasLimit: gasEstimate,
-        gasPrice,
-        ...(value && !isZero(value) ? { value, from: account } : { from: account }),
-    }).then(res => notification.open({
-                    message: 'Visit the Binance Smart Chain page to view transaction details',
-                    description: '',
-                    btn: btn(res.hash), 
-                    placement: 'top'
-                })
-      )
-    .catch(err => {
-        if (err?.code === 4001) {
-            toast('error', 'Transaction rejected.');
-          } else {
-            // otherwise, the error was unexpected and we need to convey that
-            toast('error', [`Swap failed`, err, methodName, args, value]);
-          }
-        })
 }

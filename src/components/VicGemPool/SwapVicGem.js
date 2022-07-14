@@ -69,27 +69,28 @@ function SwapVicGem({ isChart, setIsChart }) {
       } else {
         setIsApprove(true);
       }
-      if (coin.address && !coin.isNetwork) {
+      if (coin.address) {
         const {token, pair} = await setPairToken(coin)
         setToken1(token)
         setBase1(pair)
-        setInterval(async() => {
+        if (currencyFrom > 0) {
+          const bestTradeSoFar = getInfoPair(token, token2, currencyFrom)
+          if (bestTradeSoFar !== null) setCurrencyTo(bestTradeSoFar.outputAmount.toSignificant(6))
+        }
+        if (!coin.isNetwork) {
           let value = web3.utils.fromWei(
             await getBalnceFrom(coin.address, account),
             "ether"
           );
-          console.log(value);
           setBalanceFrom(convertNumber(value));
-        }, 3000);
+        }
       }
 
-      if (coin && coin.isNetwork) {
-        setInterval(async() => {
-        const balance = await web3.eth.getBalance(account).then(
+      if (coin && coin.symbol === 'BNB') {
+          const balance = await web3.eth.getBalance(account).then(
             (balance) => web3.utils.fromWei(balance, 'ether')
-            );
-        setBalanceFrom(Number(balance).toFixed(5));
-      }, 3000);
+          );
+          setBalanceFrom(Number(balance).toFixed(5));
       }
     }
     if ((account) && coin) {
@@ -105,26 +106,29 @@ function SwapVicGem({ isChart, setIsChart }) {
         const {token, pair} = await setPairToken(coin2)
         setToken2(token)
         setBase2(pair)
+        if (currencyFrom > 0) {
+          const bestTradeSoFar = getInfoPair(token1, token, currencyFrom)
+          if (bestTradeSoFar !== null) setCurrencyTo(bestTradeSoFar.outputAmount.toSignificant(6))
+        }
         const allPairs = [...base1, ...base2, ...allPairsDefault.flat(1)].filter(item => item !== null);
-        setInterval(async() => {
+
+        if (!coin2.isNetwork) {
           let value = web3.utils.fromWei(
-            await getBalnceTo(coin2.address,  account),
+            await getBalnceTo(coin2.address, account),
             "ether"
-          );
+          );  
           setBalacneTo(convertNumber(value));
-        }, 3000);
+        }
       }
 
-      if (coin2 && coin2.isNetwork) {
-        setInterval(async() => {
-          const balance = await web3.eth.getBalance(account).then(
-              (balance) => web3.utils.fromWei(balance, 'ether')
-              );
-          setBalacneTo(Number(balance).toFixed(5));
-        }, 3000);
+      if (coin2 && coin2.symbol === 'BNB') {
+        const balance = await web3.eth.getBalance(account).then(
+          (balance) => web3.utils.fromWei(balance, 'ether')
+          );
+        setBalacneTo(Number(balance).toFixed(5));
       }
     }
-    if ((account) && coin2) {
+    if (account && coin2) {
       getBalance();
     }
    // setConvertId(idCoin.filter(item => item[2].toLowerCase() === coin2.symbol.toLowerCase()))
@@ -145,12 +149,12 @@ function SwapVicGem({ isChart, setIsChart }) {
     }
     typingTimeoutRef.current = setTimeout(async() => {
       if (account) {
-        if (value !== '' && coin2 && coin2.address) { 
+        if (value !== '' && value > 0  && coin2 && coin2.address) { 
           const bestTradeSoFar = getInfoPair(token1, token2, value)
           if (bestTradeSoFar !== null) setCurrencyTo(bestTradeSoFar.outputAmount.toSignificant(6));
         }
       }
-    }, 500)
+    }, 800)
   };
 
   const handleInputTo = async (value) => {
@@ -161,16 +165,17 @@ function SwapVicGem({ isChart, setIsChart }) {
     typingTimeoutRef.current = setTimeout(async() => {
       if (swap) {
           setCheckSwap(true)
-          if (value !== '' && account && coin && coin.address) {
+          if (value !== '' && value > 0 && account && coin && coin.address) {
             const bestTradeSoFar = getInfoPair(token2, token1, value)
               if (bestTradeSoFar !== null) setCurrencyFrom(bestTradeSoFar.outputAmount.toSignificant(6))
           }
       }
-    }, 500)
+    }, 800)
   };
 
   const getInfoPair = (currencyAmountIn, currencyOut, value, isTrade = true) => {  
     if (base2) {
+      console.log(currencyOut);
       const allPairs = [...base1, ...base2, ...allPairsDefault.flat(1)].filter(item => item !== null);
       let bestTradeSoFar = null
         for (let i = 1; i <= MAX_HOPS; i++) {
@@ -257,6 +262,42 @@ function SwapVicGem({ isChart, setIsChart }) {
   const OnSubmitSwapCoin = async () => {
     const bestTradeSoFar = !swap ? getInfoPair(token1, token2, currencyFrom) : getInfoPair(token2, token1, currencyTo)
     if (bestTradeSoFar !== null) await SwapCallback(bestTradeSoFar, VAT*100, account, chainId, library)
+    let count = 0;
+    const a = setInterval(async () => {
+      count++;
+      if (!coin.isNetwork) {
+        let value = web3.utils.fromWei(
+          await getBalnceFrom(coin.address, account),
+          "ether"
+        );
+        setBalanceFrom(convertNumber(value));
+      }
+
+      if (!coin2.isNetwork) {
+        let value = web3.utils.fromWei(
+          await getBalnceTo(coin2.address, account),
+          "ether"
+        );  
+        setBalacneTo(convertNumber(value));
+      }
+
+      if (coin && coin.symbol === 'BNB') {
+        const balance = await web3.eth.getBalance(account).then(
+          (balance) => web3.utils.fromWei(balance, 'ether')
+        );
+        setBalanceFrom(Number(balance).toFixed(5));
+      }
+
+      if (coin2 && coin2.symbol === 'BNB') {
+        const balance = await web3.eth.getBalance(account).then(
+          (balance) => web3.utils.fromWei(balance, 'ether')
+          );
+        setBalacneTo(Number(balance).toFixed(5));
+      }
+      if (count === 20) {
+        clearInterval(a);
+      }
+    }, 2000);
     // swapCoin(bestTradeSoFar, VAT*100)
     // if ((coin && coin['isNetwork']) || (coin2 && coin2['isNetwork'])) {
     //     swapCoin(account, currencyFrom, (currencyTo*(100 - VAT)/100).toFixed(5), routerAddress)
