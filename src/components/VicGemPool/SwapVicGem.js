@@ -69,24 +69,27 @@ function SwapVicGem({ isChart, setIsChart }) {
       } else {
         setIsApprove(true);
       }
-      if (coin.address) {
+      if (coin.address && !coin.isNetwork) {
         const {token, pair} = await setPairToken(coin)
         setToken1(token)
         setBase1(pair)
         setInterval(async() => {
           let value = web3.utils.fromWei(
-            await getBalnceFrom(coin.address, account ),
+            await getBalnceFrom(coin.address, account),
             "ether"
           );
+          console.log(value);
           setBalanceFrom(convertNumber(value));
         }, 3000);
       }
 
       if (coin && coin.isNetwork) {
+        setInterval(async() => {
         const balance = await web3.eth.getBalance(account).then(
             (balance) => web3.utils.fromWei(balance, 'ether')
             );
         setBalanceFrom(Number(balance).toFixed(5));
+      }, 3000);
       }
     }
     if ((account) && coin) {
@@ -113,10 +116,12 @@ function SwapVicGem({ isChart, setIsChart }) {
       }
 
       if (coin2 && coin2.isNetwork) {
-        const balance = await web3.eth.getBalance(account).then(
-            (balance) => web3.utils.fromWei(balance, 'ether')
-            );
-        setBalacneTo(Number(balance).toFixed(5));
+        setInterval(async() => {
+          const balance = await web3.eth.getBalance(account).then(
+              (balance) => web3.utils.fromWei(balance, 'ether')
+              );
+          setBalacneTo(Number(balance).toFixed(5));
+        }, 3000);
       }
     }
     if ((account) && coin2) {
