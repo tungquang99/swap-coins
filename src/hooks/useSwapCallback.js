@@ -62,11 +62,12 @@ export async function SwapCallback(trade, allowedSlippage, account, chainId, lib
     console.log(estimatedCalls);
     //a successful estimation is a bignumber gas estimate and the next call is also a bignumber gas estimate
     const successfulEstimation = estimatedCalls.find((el, ix, list) => {
-        console.log();
         if (list.includes(undefined)) {
             return 'gasEstimate' in el
+        } else if (el !== undefined) {
+            return 'gasEstimate' in el && (ix === list.length - 1 || (list[ix + 1] !== undefined && 'gasEstimate' in list[ix + 1]))
         } else {
-            return 'gasEstimate' in el && (ix === list.length - 1 || (list[ix + 1] && 'gasEstimate' in list[ix + 1]))
+            toast('error', 'Unexpected error. Could not estimate gas for the swap.')
         }
     })
 
