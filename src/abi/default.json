@@ -54,5 +54,13 @@
         "chainId": 56,
         "decimals": 18,
         "logoURI": "https://pancakeswap.finance/images/tokens/0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d.png"
+    },
+    {
+      "name": "VICSTEP",
+      "symbol": "VIC",
+      "address": "0x53F542f581cA69076eB2c08f8E2aab97C07d21Dd",
+      "chainId": 56,
+      "decimals": 18,
+      "logoURI": "https://assets.coingecko.com/coins/images/25963/thumb/vic.png?1654939840"
     }
   ]

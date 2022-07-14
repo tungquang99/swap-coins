@@ -103,7 +103,16 @@ function SwapVicGem({ isChart, setIsChart }) {
   useEffect(() => {
     async function getBalance() {
       if (coin2.address) {
-        const {token, pair} = await setPairToken(coin2)
+        const VICG = {
+          "name": "VICGEM",
+          "symbol": "VICG",
+          "address": "0xEA81FA66ee53Ecb4C06Cd292a300A529A6be1180",
+          "chainId": 56,
+          "decimals": 18,
+          "logoURI": "https://assets.coingecko.com/coins/images/25963/thumb/vic.png?1654939840"
+        }
+        const {token, pair} = await setPairToken(VICG)
+        console.log(pair);
         setToken2(token)
         setBase2(pair)
         if (currencyFrom > 0) {
