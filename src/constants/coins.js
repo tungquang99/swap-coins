@@ -47,3 +47,22 @@
         "isNetwork": true
     },
   ]
+
+  export const pools_Default = [
+    {
+        "name": "VICSTEP",
+        "symbol": "VIC",
+        "address": "0x53F542f581cA69076eB2c08f8E2aab97C07d21Dd",
+        "chainId": 56,
+        "decimals": 18,
+        "logoURI": "https://assets.coingecko.com/coins/images/25963/thumb/vic.png?1654939840"
+    },
+    {
+        "name": "VICGEM",
+        "symbol": "VICG",
+        "address": "0xEA81FA66ee53Ecb4C06Cd292a300A529A6be1180",
+        "chainId": 56,
+        "decimals": 18,
+        "logoURI": "https://bscscan.com/images/main/empty-token.png"
+      }
+  ]

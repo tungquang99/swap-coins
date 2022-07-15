@@ -6,6 +6,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    
+  
 }
 
 .swap-vic {
@@ -15,6 +17,9 @@
     background-color: #5a5a5a;
     padding: 16px;
 
+    img {
+        width: 20px;
+    }
 
     &__header {
         display: flex;
@@ -115,11 +120,13 @@
         justify-content: space-between;
         align-items: flex-end;
         margin-bottom: 8px;
+        
 
         &-text {
             display: flex;
             align-items: flex-end;
             margin-left: 8px;
+            align-items: center;
             span {
                 margin-left: 8px;
                 font-weight: bold;
@@ -351,6 +358,28 @@
             width: 22%;
         }
       }
+}
+
+.pool {
+    text-align: left;
+    display: flex;
+    align-items: center;
+    margin-left: 6px;
+    &-item {
+        background-color: $primary;
+        margin-right: 5px;
+        color: #fff;
+        cursor: pointer;
+        display: inline-flex;
+        margin-bottom: 8px;
+        width: 105px;
+        border-radius: 4px;
+        
+        & span {
+            display: flex;
+            align-items: center;
+        }
+    }
 }
 
 

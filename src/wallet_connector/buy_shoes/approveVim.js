@@ -15,7 +15,8 @@ export const approvalForAll = async ( account, library) => {
    }
 }
 
-export async function approveVim(address, account, currency) {
+export async function approveVim(address, account, currency ) {
+   currency = currency == 0 ?  1 : currency;
    const contractApproveVim = await contract(address);
    const amount = web3.utils.toWei(String(Number(currency) + (currency*20/100)), 'ether');
    return await contractApproveVim.methods.approve(contractAddress.spender, amount).send({from: account}).then(data => data)

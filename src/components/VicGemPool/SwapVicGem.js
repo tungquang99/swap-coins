@@ -24,6 +24,7 @@ import { getPair } from "../../hooks/getPair";
 import { contractAddress, tokenDefault } from "../../constants/constants";
 import { SwapCallback } from "../../hooks/useSwapCallback";
 import { parseUnits } from "ethers/lib/utils";
+import { pools_Default } from "../../constants/coins";
 const token_default = require('../../abi/default.json')
 
 function SwapVicGem({ isChart, setIsChart }) {
@@ -33,8 +34,11 @@ function SwapVicGem({ isChart, setIsChart }) {
     library,
     setModalSelectToken,
     setModalSelectTokenTo,
+    coins,
     coin,
+    setCoin,
     coin2,
+    setCoin2,
     idCoin, 
     allPairsDefault,
     chainId
@@ -58,9 +62,36 @@ function SwapVicGem({ isChart, setIsChart }) {
   const [checkSwap, setCheckSwap] = useState(false);
   const [enableBtn, setEnableBtn] = useState("disabled");
   const [isApprove, setIsApprove] = useState(true);
+  const [isBtn, setIsBtn] = useState(false)
   const MAX_HOPS = 3;
-  const typingTimeoutRef = useRef(null);
-
+  const typingTimeoutRef = useRef(null); 
+  const VIC = {
+    "name": "VICSTEP",
+      "symbol": "VIC",
+      "address": "0x53F542f581cA69076eB2c08f8E2aab97C07d21Dd",
+      "chainId": 56,
+      "decimals": 18,
+      "logoURI": "https://assets.coingecko.com/coins/images/25963/thumb/vic.png?1654939840"
+  }
+ 
+  function setPool(coin1, coin2) {
+    if ((coin1.symbol === 'BNB' && coin2.symbol === 'VICG') || (coin1.symbol === 'VIC' && coin2.symbol === 'VICG')) {
+      if (!token_default.some(item => item.symbol === 'VIC')) {
+        token_default.push(VIC)
+       
+      }
+    } else {
+      const idx_token_df = token_default.findIndex(item => item.symbol === 'VIC')
+      if (idx_token_df > 0) {
+        token_default.splice(idx_token_df, 1)
+      }
+    }
+    setCoin(coin1)
+    setCoin2(coin2);
+    setCurrencyFrom(0)
+    setCurrencyTo(0)
+    setSwap(false)
+  }
   //* Get balance and check Approve Toekn from
   useEffect(() => {
     async function getBalance() {
@@ -70,6 +101,7 @@ function SwapVicGem({ isChart, setIsChart }) {
         setIsApprove(true);
       }
       if (coin.address) {
+        console.log(token_default);
         const {token, pair} = await setPairToken(coin)
         setToken1(token)
         setBase1(pair)
@@ -97,7 +129,7 @@ function SwapVicGem({ isChart, setIsChart }) {
       getBalance();
     }
    // setcoinId(idCoin.filter(item => item[2].toLowerCase() === coin.symbol.toLowerCase()))
-  }, [coin, account]);
+  }, [coin, account, coin2]);
 
    //* Get balance and check Approve Toekn to
   useEffect(() => {
@@ -135,6 +167,9 @@ function SwapVicGem({ isChart, setIsChart }) {
   }, [coin2, account]);
 
   const setPairToken = async (coin) => {
+    const tokenDefault = token_default.map((item) => {
+      return  new Token(56, item.address, 18, item.symbol, item.name);
+    })
     const token = new Token(56, coin.address, 18, coin.symbol, coin.name)
     const pair = await Promise.all(tokenDefault.map(async (item) => {
       return await getPair(token, item);
@@ -155,6 +190,8 @@ function SwapVicGem({ isChart, setIsChart }) {
         }
       }
     }, 800)
+
+    value !== '' ? setIsBtn(true) : setIsBtn(false)
   };
 
   const handleInputTo = async (value) => {
@@ -163,20 +200,23 @@ function SwapVicGem({ isChart, setIsChart }) {
       clearTimeout(typingTimeoutRef.current)
     }
     typingTimeoutRef.current = setTimeout(async() => {
+      if (value !== '' && value > 0 && account && coin && coin.address) {
+        const bestTradeSoFar =  getInfoPair(token2, token1, value)
+          if (bestTradeSoFar !== null) setCurrencyFrom(bestTradeSoFar.outputAmount.toSignificant(6))
+      }
       if (swap) {
           setCheckSwap(true)
-          if (value !== '' && value > 0 && account && coin && coin.address) {
-            const bestTradeSoFar = getInfoPair(token2, token1, value)
-              if (bestTradeSoFar !== null) setCurrencyFrom(bestTradeSoFar.outputAmount.toSignificant(6))
-          }
       }
     }, 800)
+
+    value !== '' ? setIsBtn(true) : setIsBtn(false)
   };
 
   const getInfoPair = (currencyAmountIn, currencyOut, value, isTrade = true) => {  
     if (base2) {
-      console.log(currencyOut);
       const allPairs = [...base1, ...base2, ...allPairsDefault.flat(1)].filter(item => item !== null);
+      console.log(base1);
+      console.log(base2);
       let bestTradeSoFar = null
         for (let i = 1; i <= MAX_HOPS; i++) {
           const currentTrade =
@@ -198,13 +238,13 @@ function SwapVicGem({ isChart, setIsChart }) {
   }
 
   function getAmountIn(value, currency) {
-    return  token_default.some(item => item.address === coin.address) ||  token_default.some(item => item.address === coin.address) ? CurrencyAmount.ether(parseUnits(value, currency.decimals).toString()) 
+    return  token_default.some(item => item.address === currency.address && item.symbol !== 'VIC') ? CurrencyAmount.ether(parseUnits(value, currency.decimals).toString()) 
       : new TokenAmount(currency, web3.utils.toWei(value.toString(), 'ether'))
   }
 
   const handleEnableVic = async () => {
     //* checkApprove
-    const isApprove = await approveVim(coin.address, account, currencyFrom);
+    const isApprove = await approveVim(!swap ? coin.address : coin2.address, account, !swap ? currencyFrom : currencyTo);
     setIsApprove(isApprove.status);
   };
 
@@ -251,7 +291,7 @@ function SwapVicGem({ isChart, setIsChart }) {
 
   const handleAutoSlippage = () => {
     setStatus(!status);
-    setVAT(0.5);
+    setVAT(9);
   };
 
   function convertNumber(value) {
@@ -261,6 +301,7 @@ function SwapVicGem({ isChart, setIsChart }) {
   }
   const OnSubmitSwapCoin = async () => {
     const bestTradeSoFar = !swap ? getInfoPair(token1, token2, currencyFrom) : getInfoPair(token2, token1, currencyTo)
+    setIsBtn(false)
     if (bestTradeSoFar !== null) await SwapCallback(bestTradeSoFar, VAT*100, account, chainId, library)
     let count = 0;
     const a = setInterval(async () => {
@@ -294,28 +335,10 @@ function SwapVicGem({ isChart, setIsChart }) {
           );
         setBalacneTo(Number(balance).toFixed(5));
       }
-      if (count === 20) {
+      if (count === 8) {
         clearInterval(a);
       }
     }, 2000);
-    // swapCoin(bestTradeSoFar, VAT*100)
-    // if ((coin && coin['isNetwork']) || (coin2 && coin2['isNetwork'])) {
-    //     swapCoin(account, currencyFrom, (currencyTo*(100 - VAT)/100).toFixed(5), routerAddress)
-    // } else {
-    //     if (!swap) {
-    //       setInterval(() => {
-    //         const bestTradeSoFar = getInfoPair(currencyFrom, currencyTo)
-    //         setCurrencyTo(bestTradeSoFar.executionPrice.toSignificant(6))
-    //       }, 500000);
-    //       swapCoin(account, currencyFrom, (currencyTo*(100 - VAT)/100).toFixed(5), routerAddress)
-    //     } else {
-    //         setInterval(() => {
-    //           const bestTradeSoFar = getInfoPair(currencyTo, currencyFrom)
-    //           setCurrencyTo(bestTradeSoFar.executionPrice.invert().toSignificant(6))
-    //         }, 500000);
-    //         swapCoin(account, (currencyTo/((100 - VAT)/100)).toFixed(5), currencyFrom, routerAddress)
-    //     }
-    // }
   }
 
   return (
@@ -327,6 +350,22 @@ function SwapVicGem({ isChart, setIsChart }) {
             <a href="https://pancakeswap.finance/swap" target="_blank">
               Pancake v2
             </a>
+          </div>
+          <div className="swap-vic__auto">Select Pools: 
+          </div>
+          <div className="pool">
+            <span className="pool-item" onClick={() => setPool(token_default[0], pools_Default[0])}> 
+                <span><img src={token_default[0].logoURI} alt='' width="15px" /> {token_default[0].symbol}/</span> 
+                <span><img src={pools_Default[0].logoURI} alt='' width="20px" /> {pools_Default[0].symbol}</span>
+              </span>
+              <span className="pool-item" onClick={() => setPool(token_default[0], pools_Default[1])}> 
+                <span><img src={token_default[0].logoURI} alt='' width="15px" /> {token_default[0].symbol}/</span> 
+                <span><img src={pools_Default[1].logoURI} alt='' width="15px" /> {pools_Default[1].symbol}</span>
+              </span>
+              <span className="pool-item" onClick={() => setPool(pools_Default[0], pools_Default[1])}> 
+                <span><img src={pools_Default[0].logoURI} alt='' width="20px" /> {pools_Default[0].symbol}/</span> 
+                <span><img src={pools_Default[1].logoURI} alt='' width="15px" /> {pools_Default[1].symbol}</span>
+              </span>
           </div>
         </div>
       </div>
@@ -490,7 +529,7 @@ function SwapVicGem({ isChart, setIsChart }) {
               <div className="swap-vic__actions">
                 <div
                   className={`swap-vic__btn swap-vic__btn-isapprove swap-vic__btn-${
-                    (currencyFrom != 0 || currencyTo != 0) && (coin && coin.address !== null && coin2 && coin2.address !== null)
+                     coin && coin.address !== null && coin2 && coin2.address !== null && isBtn
                   }`}
                   onClick={OnSubmitSwapCoin}
                 >

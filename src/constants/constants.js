@@ -17,6 +17,7 @@ export const contractAddress = {
 export const tokenDefault = token_default.map((item) => {
   return  new Token(56, item.address, 18, item.symbol, item.name);
 })
+
 export const web3Provider = new ethers.providers.JsonRpcProvider('https://bsc-dataseed.binance.org/')
 export const BIPS_BASE = JSBI.BigInt(10000)
 
