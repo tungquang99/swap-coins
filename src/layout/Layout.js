@@ -70,7 +70,7 @@ function Layout() {
             fetch(`https://tokens.pancakeswap.finance/coingecko.json`).then(response => response.json())
             .then(data => {
                 data.tokens.push(VICG)
-                setCoins(data.tokens)
+                setCoins(data.tokens.filter(item => item.symbol === 'VICG' || item.symbol === 'VIC' || item.symbol === 'VIM'))
             }).catch(err => err);
         }
         async function getIdCoin() {

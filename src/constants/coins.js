@@ -20,7 +20,7 @@
         "isNetwork": true
     },
     {
-        "name": "Tether",
+        "name": "Tether USD",
         "symbol": "USDT",
         "address": "0x55d398326f99059fF775485246999027B3197955",
         "chainId": 56,
@@ -46,6 +46,22 @@
         "logoURI": "https://assets.coingecko.com/coins/images/279/thumb/ethereum.png",
         "isNetwork": true
     },
+    {
+        "name": "PancakeSwap Token",
+        "symbol": "CAKE",
+        "address": "0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82",
+        "chainId": 56,
+        "decimals": 18,
+        "logoURI": "https://pancakeswap.finance/images/tokens/0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82.png"
+    },
+    {
+        "name": "Binance-Peg USD Coin",
+        "symbol": "USDC",
+        "address": "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
+        "chainId": 56,
+        "decimals": 18,
+        "logoURI": "https://pancakeswap.finance/images/tokens/0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d.png"
+    }
   ]
 
   export const pools_Default = [

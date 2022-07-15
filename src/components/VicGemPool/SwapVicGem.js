@@ -376,7 +376,7 @@ function SwapVicGem({ isChart, setIsChart }) {
           <span className="swap-vic__body--title__text"></span>
         </div>
         <div className={`swap-vic__swaps ${swap ? " reverse" : ""}`}>
-          <div className="swap-vic__form">
+          <div className="swap-vic__form" style={{position: 'relative'}}>
             <div className="swap-vic__label">
               <div className="swap-vic__label-text">
                 {coin && <img src={coin.logoURI} alt={coin.logoURI} />}
@@ -396,6 +396,7 @@ function SwapVicGem({ isChart, setIsChart }) {
               value={currencyFrom}
               onChange={(e) => handleInputFrom(e.target.value, coin.symbol)}
             />
+            <button className="btn-max" onClick={() => handleInputFrom(balacneFrom)}>Max</button>
           </div>
 
           <div className="swap-vic__icon-swap">

@@ -13,7 +13,6 @@ export const useEagerConnect = () => {
             });
         } else if (localStorage.getItem('wallet') === 'wc') {
             activate(walletConnect)
-           
         }
     }, [active, deactivate, library, error, chainId, account, activate])
     return {active, deactivate, library, error, chainId, account, activate};

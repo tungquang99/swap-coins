@@ -382,6 +382,24 @@
     }
 }
 
+.btn-max {
+    width: 40px;
+    background-color: transparent;
+    border: 3px solid $primary;
+    position: absolute;
+    top: 61%;
+    left: 3%;
+    font-size: 13px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $primary;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
 
 
 @media (min-width: 768px) {
