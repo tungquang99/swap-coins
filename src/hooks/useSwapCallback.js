@@ -59,7 +59,6 @@ export async function SwapCallback(trade, allowedSlippage, account, chainId, lib
                 })
         })
     )
-    console.log(estimatedCalls);
     //a successful estimation is a bignumber gas estimate and the next call is also a bignumber gas estimate
     const successfulEstimation = estimatedCalls.find((el, ix, list) => {
         if (list.includes(undefined)) {

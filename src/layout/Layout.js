@@ -18,7 +18,7 @@ const VICG = {
     "address": "0xEA81FA66ee53Ecb4C06Cd292a300A529A6be1180",
     "chainId": 56,
     "decimals": 18,
-    "logoURI": "https://assets.coingecko.com/coins/images/25963/thumb/vic.png?1654939840"
+    "logoURI": "https://bscscan.com/images/main/empty-token.png"
   }
 export const layoutContext = createContext();
 
