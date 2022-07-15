@@ -57,7 +57,7 @@ function SwapVicGem({ isChart, setIsChart }) {
   const [exchangeRate, setExchangeRate] = useState(0);
   const [exchangeRateTo, setExchangeRateTo] = useState(0);
   const [VAT, setVAT] = useState(9);
-  const [status, setStatus] = useState(false);
+  const [status, setStatus] = useState(true);
   const [swap, setSwap] = useState(false);
   const [checkSwap, setCheckSwap] = useState(false);
   const [enableBtn, setEnableBtn] = useState("disabled");
