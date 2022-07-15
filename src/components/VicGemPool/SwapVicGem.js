@@ -57,7 +57,7 @@ function SwapVicGem({ isChart, setIsChart }) {
   const [exchangeRate, setExchangeRate] = useState(0);
   const [exchangeRateTo, setExchangeRateTo] = useState(0);
   const [VAT, setVAT] = useState(5);
-  const [status, setStatus] = useState(true);
+  const [status, setStatus] = useState(false);
   const [swap, setSwap] = useState(false);
   const [checkSwap, setCheckSwap] = useState(false);
   const [enableBtn, setEnableBtn] = useState("disabled");
@@ -341,6 +341,14 @@ function SwapVicGem({ isChart, setIsChart }) {
     }, 2000);
   }
 
+  const getVAT = (value) => {
+    if (value !== '') {
+      setVAT(value < 3 ? 3 : value)
+    } else {
+      setVAT('')
+    }
+  }
+
   return (
     <div className="swap-vic">
       <div className="swap-vic__header">
@@ -432,7 +440,7 @@ function SwapVicGem({ isChart, setIsChart }) {
             className="swap-vic__input swap-vic__input--vat"
             readOnly={status}
             value={VAT}
-            onChange={(e) => setVAT(e.target.value)}
+            onChange={(e) => getVAT(e.target.value)}
           />
           <input
             type="text"
