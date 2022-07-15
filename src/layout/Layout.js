@@ -16,6 +16,14 @@ import { tokenDefault } from '../constants/constants';
 export const layoutContext = createContext();
 
 function Layout() {
+    const VICG = {
+        "name": "VICGEM",
+        "symbol": "VICG",
+        "address": "0xEA81FA66ee53Ecb4C06Cd292a300A529A6be1180",
+        "chainId": 56,
+        "decimals": 18,
+        "logoURI": "https://assets.coingecko.com/coins/images/25963/thumb/vic.png?1654939840"
+      }
     useAuthGoogle();
     useEffect(() => {
        
@@ -62,6 +70,7 @@ function Layout() {
         async function getAllCoins() {
             fetch(`https://tokens.pancakeswap.finance/coingecko.json`).then(response => response.json())
             .then(data => {
+                data.tokens.push(VICG)
                 setCoins(data.tokens)
             }).catch(err => err);
         }
