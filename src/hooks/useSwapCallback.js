@@ -65,6 +65,8 @@ export async function SwapCallback(trade, allowedSlippage, account, chainId, lib
         if (list.includes(undefined)) {
             if (el !== undefined) {
                 return 'gasEstimate' in el
+            } else {
+                toast('error', 'Unexpected error. Could not estimate gas for the swap.')
             }
         } else if (el !== undefined) {
             return 'gasEstimate' in el && (ix === list.length - 1 || (list[ix + 1] !== undefined && 'gasEstimate' in list[ix + 1]))
