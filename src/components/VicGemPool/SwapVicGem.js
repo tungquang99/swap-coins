@@ -18,7 +18,7 @@ import { toast } from "../../shared/toast/toast";
 import ConnectWallet from "../Navigation/ConnectWallet";
 import { approveVim } from "../../wallet_connector/buy_shoes/approveVim";
 import { walletConnect } from "../../wallet_connector/connectors";
-import {  CurrencyAmount, JSBI, Pair, Percent, Token, TokenAmount, Trade } from '@pancakeswap/sdk'
+import {  CurrencyAmount, ETHER, JSBI, Pair, Percent, Token, TokenAmount, Trade } from '@pancakeswap/sdk'
 import { ethers } from "ethers";
 import { getPair } from "../../hooks/getPair";
 import { contractAddress, tokenDefault } from "../../constants/constants";
@@ -63,6 +63,7 @@ function SwapVicGem({ isChart, setIsChart }) {
   const [enableBtn, setEnableBtn] = useState("disabled");
   const [isApprove, setIsApprove] = useState(true);
   const [isBtn, setIsBtn] = useState(false)
+  const [isSwap, setIsSwap] = useState(false)
   const MAX_HOPS = 3;
   const typingTimeoutRef = useRef(null); 
   const VIC = {
@@ -191,7 +192,7 @@ function SwapVicGem({ isChart, setIsChart }) {
         }
       }
     }, 800)
-
+    setIsSwap(false)
     value !== '' ? setIsBtn(true) : setIsBtn(false)
   };
 
@@ -202,14 +203,14 @@ function SwapVicGem({ isChart, setIsChart }) {
     }
     typingTimeoutRef.current = setTimeout(async() => {
       if (value !== '' && value > 0 && account && coin && coin.address) {
-        const bestTradeSoFar =  getInfoPair(token2, token1, value)
-          if (bestTradeSoFar !== null) setCurrencyFrom(bestTradeSoFar.outputAmount.toSignificant(6))
+        const bestTradeSoFar =  getInfoPair(token1, token2, value, false)
+          if (bestTradeSoFar !== null) setCurrencyFrom(bestTradeSoFar.inputAmount.toExact())
       }
       if (swap) {
           setCheckSwap(true)
       }
     }, 800)
-
+    setIsSwap(true) 
     value !== '' ? setIsBtn(true) : setIsBtn(false)
   };
 
@@ -220,7 +221,7 @@ function SwapVicGem({ isChart, setIsChart }) {
         for (let i = 1; i <= MAX_HOPS; i++) {
           const currentTrade =
           (isTrade ? Trade.bestTradeExactIn(allPairs, getAmountIn(value, currencyAmountIn), currencyOut, { maxHops: i, maxNumResults: 1 })[0] :
-          Trade.bestTradeExactOut(allPairs, currencyAmountIn,  getAmountIn(value, currencyOut), { maxHops: i, maxNumResults: 1 })[0]) ?? null
+          Trade.bestTradeExactOut(allPairs, currencyAmountIn.symbol === 'BNB' ? ETHER : currencyAmountIn,  getAmountIn(value, currencyOut), { maxHops: i, maxNumResults: 1 })[0]) ?? null
           bestTradeSoFar = currentTrade
       }
       if (bestTradeSoFar !== null) {
@@ -299,7 +300,7 @@ function SwapVicGem({ isChart, setIsChart }) {
       : Number(value).toFixed(3);
   }
   const OnSubmitSwapCoin = async () => {
-    const bestTradeSoFar = !swap ? getInfoPair(token1, token2, currencyFrom) : getInfoPair(token2, token1, currencyTo)
+    const bestTradeSoFar = !swap ? (isSwap ? getInfoPair(token1, token2, currencyTo, false) : getInfoPair(token1, token2, currencyFrom)) : getInfoPair(token2, token1, currencyTo)
     setIsBtn(false)
     if (bestTradeSoFar !== null) await SwapCallback(bestTradeSoFar, VAT*100, account, chainId, library)
     setIsBtn(true)
@@ -335,7 +336,7 @@ function SwapVicGem({ isChart, setIsChart }) {
           );
         setBalacneTo(Number(balance).toFixed(5));
       }
-      if (count === 8) {
+      if (count === 5) {
         clearInterval(a);
       }
     }, 2000);
@@ -460,20 +461,20 @@ function SwapVicGem({ isChart, setIsChart }) {
         <div className="swap-vic__cost"> 
             <Fragment>
               {
-                (currencyFrom != 0 || currencyTo != 0) && exchangeRate != 0 &&   <div> Price: {exchangeRate} {!swap ? coin2.symbol : coin.symbol} per 1 {!swap ? coin.symbol : coin2.symbol }</div>
+                (currencyFrom != 0 || currencyTo != 0) && exchangeRate != 0 &&   <div> Price: {exchangeRateTo} {!swap ? coin2.symbol : coin.symbol} per 1 {!swap ? coin.symbol : coin2.symbol }</div>
               }
               {
-                (currencyFrom != 0 || currencyTo != 0) && exchangeRateTo != 0 && <div> Price: {exchangeRateTo} {!swap ? coin.symbol : coin2.symbol } per 1 {!swap ? coin2.symbol : coin.symbol}</div>
+                (currencyFrom != 0 || currencyTo != 0) && exchangeRateTo != 0 && <div> Price: {exchangeRate} {!swap ? coin.symbol : coin2.symbol } per 1 {!swap ? coin2.symbol : coin.symbol}</div>
               }
             </Fragment>
             {
                 !checkSwap && 
                   <Fragment>
                      {
-                        (currencyFrom != 0 || currencyTo != 0) && coin2 && !swap && account && <div>Minimum Received: {(currencyTo*(100 - VAT)/100).toFixed(5)}  {coin2.symbol}</div>
+                        ((currencyFrom != 0 || currencyTo != 0 || !isSwap) && coin2 && account)  && <div>Minimum Received: {currencyTo}  {coin2.symbol}</div>
                      }
                      {
-                        (currencyFrom != 0 || currencyTo != 0) && coin2 && swap && account && <div>Minimum Sold: {(currencyTo/((100 - VAT)/100)).toFixed(5)}  {coin2.symbol}</div>
+                        ((currencyFrom != 0 || currencyTo != 0 || isSwap) && coin2 && account) && <div>Maximum Sold: {(currencyFrom/((100 - VAT)/100)).toFixed(5)}  {coin.symbol}</div>
                      }
                   </Fragment>  
             }
@@ -482,10 +483,10 @@ function SwapVicGem({ isChart, setIsChart }) {
                 checkSwap && 
                   <Fragment>
                      {
-                        (currencyFrom != 0 || currencyTo != 0) && coin2 && checkSwap && account && <div>Minimum Received: {(currencyTo*(100 - VAT)/100).toFixed(5)}  {coin2.symbol}</div>
+                        (currencyFrom != 0 || currencyTo != 0) && coin2 && account && <div>Minimum Received: {currencyFrom}  {coin.symbol}</div>
                      }
                      {
-                        (currencyFrom != 0 || currencyTo != 0) && coin2 && !checkSwap && account && <div>Minimum Sold: {(currencyTo/((100 - VAT)/100)).toFixed(5)}  {coin2.symbol}</div>
+                        (currencyFrom != 0 || currencyTo != 0) && coin2 && account && <div>Maximum Sold: {(currencyTo/((100 - VAT)/100)).toFixed(5)}  {coin2.symbol}</div>
                      }
                   </Fragment>
                 

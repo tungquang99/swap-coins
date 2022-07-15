@@ -59,7 +59,7 @@ export async function SwapCallback(trade, allowedSlippage, account, chainId, lib
                 })
         })
     )
-    
+
     //a successful estimation is a bignumber gas estimate and the next call is also a bignumber gas estimate
     const successfulEstimation = estimatedCalls.find((el, ix, list) => {
         if (list.includes(undefined)) {
@@ -89,6 +89,7 @@ export async function SwapCallback(trade, allowedSlippage, account, chainId, lib
             gasPrice,
             ...(value && !isZero(value) ? { value, from: account } : { from: account }),
         }).then(res => notification.open({
+                        duration: 30,
                         message: 'Visit the Binance Smart Chain page to view transaction details',
                         description: '',
                         btn: btn(res.hash), 
