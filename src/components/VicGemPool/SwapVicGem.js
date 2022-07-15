@@ -396,14 +396,14 @@ function SwapVicGem({ isChart, setIsChart }) {
               value={currencyFrom}
               onChange={(e) => handleInputFrom(e.target.value, coin.symbol)}
             />
-            <button className="btn-max" onClick={() => handleInputFrom(balacneFrom)}>Max</button>
+            {!swap && <button className="btn-max" onClick={() => handleInputFrom(balacneFrom)}>Max</button>}
           </div>
 
           <div className="swap-vic__icon-swap">
-            <i className="bx bx-sort-alt-2" onClick={handleSwap}></i>
+           { coin && coin.address !== null && coin2 && coin2.address !== null ? <i className="bx bx-sort-alt-2" onClick={handleSwap}></i> : <i className="bx bx-sort-alt-2"></i>} 
           </div>
 
-          <div className="swap-vic__form">
+          <div className="swap-vic__form" style={{position: 'relative'}}>
             <div className="swap-vic__label">
               <div className="swap-vic__label-text">
                 {coin2 && <img src={coin2.logoURI} alt={coin2.logoURI} />}
@@ -418,11 +418,12 @@ function SwapVicGem({ isChart, setIsChart }) {
             </div>
             <input
               type="number"
-              className="swap-vic__input"
+              className="swap-vic__input active"
               readOnly={!coin2}
               value={currencyTo}
               onChange={(e) => handleInputTo(e.target.value)}
             />
+              {swap && <button className="btn-max" onClick={() => handleInputTo(balacneTo)}>Max</button>}
           </div>
         </div>
 
