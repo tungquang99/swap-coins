@@ -304,6 +304,7 @@ function SwapVicGem({ isChart, setIsChart }) {
     const bestTradeSoFar = !swap ? getInfoPair(token1, token2, currencyFrom) : getInfoPair(token2, token1, currencyTo)
     setIsBtn(false)
     if (bestTradeSoFar !== null) await SwapCallback(bestTradeSoFar, VAT*100, account, chainId, library)
+    setIsBtn(true)
     let count = 0;
     const a = setInterval(async () => {
       count++;
