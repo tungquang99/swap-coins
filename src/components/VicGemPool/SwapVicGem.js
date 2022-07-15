@@ -56,7 +56,7 @@ function SwapVicGem({ isChart, setIsChart }) {
   const [priceImpact, setPriceImpact] = useState(null);
   const [exchangeRate, setExchangeRate] = useState(0);
   const [exchangeRateTo, setExchangeRateTo] = useState(0);
-  const [VAT, setVAT] = useState(3);
+  const [VAT, setVAT] = useState(5);
   const [status, setStatus] = useState(true);
   const [swap, setSwap] = useState(false);
   const [checkSwap, setCheckSwap] = useState(false);
@@ -102,12 +102,12 @@ function SwapVicGem({ isChart, setIsChart }) {
         setIsApprove(true);
       }
       if (coin.address) {
-        console.log(token_default);
         const {token, pair} = await setPairToken(coin)
         setToken1(token)
         setBase1(pair)
         if (currencyFrom > 0) {
           const bestTradeSoFar = getInfoPair(token, token2, currencyFrom)
+          console.log(bestTradeSoFar);
           if (bestTradeSoFar !== null) setCurrencyTo(bestTradeSoFar.outputAmount.toSignificant(6))
         }
         if (!coin.isNetwork) {
@@ -216,8 +216,6 @@ function SwapVicGem({ isChart, setIsChart }) {
   const getInfoPair = (currencyAmountIn, currencyOut, value, isTrade = true) => {  
     if (base2) {
       const allPairs = [...base1, ...base2, ...allPairsDefault.flat(1)].filter(item => item !== null);
-      console.log(base1);
-      console.log(base2);
       let bestTradeSoFar = null
         for (let i = 1; i <= MAX_HOPS; i++) {
           const currentTrade =
@@ -292,7 +290,7 @@ function SwapVicGem({ isChart, setIsChart }) {
 
   const handleAutoSlippage = () => {
     setStatus(!status);
-    setVAT(3);
+    setVAT(5);
   };
 
   function convertNumber(value) {
