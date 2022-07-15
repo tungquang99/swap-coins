@@ -292,7 +292,7 @@ function SwapVicGem({ isChart, setIsChart }) {
 
   const handleAutoSlippage = () => {
     setStatus(!status);
-    setVAT(9);
+    setVAT(3);
   };
 
   function convertNumber(value) {
