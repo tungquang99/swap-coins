@@ -91,6 +91,7 @@ function SwapVicGem({ isChart, setIsChart }) {
     setCurrencyFrom(0)
     setCurrencyTo(0)
     setSwap(false)
+    setIsBtn(false)
   }
   //* Get balance and check Approve Toekn from
   useEffect(() => {
