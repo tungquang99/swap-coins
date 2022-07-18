@@ -18,6 +18,15 @@ function ConnectWallet() {
       localStorage.removeItem('wallet');
       navigate(location.pathname);
     }
+    
+    setInterval(myTimer, 1000);
+    function myTimer() {
+      const d = new Date();
+      if (d.getHours() === 0 && d.getMinutes() === 0 && d.getSeconds() === 0) {
+        disconnectWallet();
+      }
+    }
+
     return (
         <div className='connector'>
             {

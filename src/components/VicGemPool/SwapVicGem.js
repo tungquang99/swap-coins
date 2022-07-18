@@ -207,14 +207,15 @@ function SwapVicGem({ isChart, setIsChart }) {
           if (bestTradeSoFar !== null) setCurrencyFrom(bestTradeSoFar.inputAmount.toExact())
       }
       if (swap) {
-          setCheckSwap(true)
+          setCheckSwap(true) 
       }
     }, 800)
     setIsSwap(true) 
     value !== '' ? setIsBtn(true) : setIsBtn(false)
   };
 
-  const getInfoPair = (currencyAmountIn, currencyOut, value, isTrade = true) => {  
+  const getInfoPair = (currencyAmountIn, currencyOut, value, isTrade = true) => { 
+    console.log(token1); 
     if (base2) {
       const allPairs = [...base1, ...base2, ...allPairsDefault.flat(1)].filter(item => item !== null);
       let bestTradeSoFar = null
